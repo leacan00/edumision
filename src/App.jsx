@@ -15,160 +15,7 @@ const translateDesvio = (code) => {
 // ==========================================
 // 🛠️ MOCK BASE DE DATOS SEMILLA (8 Alumnos)
 // ==========================================
-const INITIAL_STUDENTS = [
-  {
-    id: 1,
-    name: "Martín G. (Tú)",
-    
-    uuid: "7a3b2c1d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
-    xp: 0,
-    badgeEarned: false,
-    interestRegistered: false,
-    helpsRequested: 0,
-    errorsCount: 0,
-    missions: {
-      m1: { status: "activa", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m2: { status: "bloqueada", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m3: { status: "bloqueada", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m4: { status: "bloqueada", attempts: 0, lastErrorCode: null, helps: 0, errors: 0, possibleFraud: false }
-    },
-    justificationQuality: null,
-    xapi_history: [{ time: "10:14:02", verb: "CONECTÓ", object: "Inicio de sesión vía CiDi" }]
-  },
-  {
-    id: 2,
-    name: "Sofía V.",
-    
-    uuid: "8b4c3d2e-5f6a-7b8c-9d0e-1f2a3b4c5d6e",
-    xp: 250,
-    badgeEarned: false,
-    interestRegistered: true,
-    helpsRequested: 1,
-    errorsCount: 4,
-    missions: {
-      m1: { status: "completado", attempts: 2, lastErrorCode: "ERR_DIRECT", helps: 1, errors: 1 },
-      m2: { status: "bloqueado", attempts: 3, lastErrorCode: "ERR_DIRECT", helps: 0, errors: 3 },
-      m3: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m4: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: null,
-    xapi_history: []
-  },
-  {
-    id: 3,
-    name: "Facundo S.",
-    
-    uuid: "9c5d4e3f-6a7b-8c9d-0e1f-2a3b4c5d6e7f",
-    xp: 450,
-    badgeEarned: false,
-    interestRegistered: false,
-    helpsRequested: 2,
-    errorsCount: 3,
-    missions: {
-      m1: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m2: { status: "completado", attempts: 2, lastErrorCode: "ERR_PARTIAL", helps: 1, errors: 1 },
-      m3: { status: "completado", attempts: 3, lastErrorCode: "ERR_LCD", helps: 1, errors: 2 },
-      m4: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: null,
-    xapi_history: []
-  },
-  {
-    id: 4,
-    name: "Valentina R.",
-    
-    uuid: "1d2e3f4a-5b6c-7d8e-9f0a-1b2c3d4e5f6a",
-    xp: 500,
-    badgeEarned: true,
-    interestRegistered: true,
-    helpsRequested: 0,
-    errorsCount: 0,
-    missions: {
-      m1: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m2: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m3: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m4: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: "Master",
-    xapi_history: []
-  },
-  {
-    id: 5,
-    name: "Tomás B.",
-    
-    uuid: "2e3f4a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b",
-    xp: 100,
-    badgeEarned: false,
-    interestRegistered: false,
-    helpsRequested: 2,
-    errorsCount: 2,
-    missions: {
-      m1: { status: "completado", attempts: 3, lastErrorCode: "ERR_PARTIAL", helps: 2, errors: 2 },
-      m2: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m3: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m4: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: null,
-    xapi_history: []
-  },
-  {
-    id: 6,
-    name: "Camila O.",
-    
-    uuid: "3f4a5b6c-7d8e-9f0a-1b2c-3d4e5f6a7b8c",
-    xp: 450,
-    badgeEarned: false,
-    interestRegistered: true,
-    helpsRequested: 1,
-    errorsCount: 3,
-    missions: {
-      m1: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m2: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m3: { status: "completado", attempts: 4, lastErrorCode: "ERR_LCD", helps: 1, errors: 3 },
-      m4: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: null,
-    xapi_history: []
-  },
-  {
-    id: 7,
-    name: "Bautista L.",
-    
-    uuid: "4a5b6c7d-8e9f-0a1b-2c3d-4e5f6a7b8c9d",
-    xp: 500,
-    badgeEarned: true,
-    interestRegistered: true,
-    helpsRequested: 2,
-    errorsCount: 2,
-    missions: {
-      m1: { status: "completado", attempts: 2, lastErrorCode: "ERR_DIRECT", helps: 1, errors: 1 },
-      m2: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 },
-      m3: { status: "completado", attempts: 2, lastErrorCode: "ERR_COMPARE", helps: 1, errors: 1 },
-      m4: { status: "completado", attempts: 1, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: "Intuitive",
-    xapi_history: []
-  },
-  {
-    id: 8,
-    name: "Delfina P.",
-    
-    uuid: "5b6c7d8e-9f0a-1b2c-3d4e-5f6a7b8c9d0e",
-    xp: 0,
-    badgeEarned: false,
-    interestRegistered: false,
-    helpsRequested: 0,
-    errorsCount: 0,
-    missions: {
-      m1: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m2: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m3: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 },
-      m4: { status: "no_iniciado", attempts: 0, lastErrorCode: null, helps: 0, errors: 0 }
-    },
-    justificationQuality: null,
-    xapi_history: []
-  }
-];
+const INITIAL_STUDENTS = [];
 
 // Helper para barajar aleatoriamente y reasignar letras en orden
 function prepareOptions(optionsList) {
@@ -186,126 +33,148 @@ function prepareOptions(optionsList) {
 // ==========================================
 const MathGenerator = {
   generateM1() {
-    const denoms = [5, 6, 7, 8, 9, 10];
+    const denoms = [5, 6, 7, 8, 9, 10, 12];
     const D = denoms[Math.floor(Math.random() * denoms.length)];
     const n1 = Math.floor(Math.random() * (D / 2 - 1)) + 1;
     const n2 = Math.floor(Math.random() * (D / 2 - 1)) + 1;
     const sumN = n1 + n2;
-
     const raw = [
-      { value: `${sumN}/${D}`, correct: true, feedback: `¡Suministro registrado! Con igual base de tanque (${D}) sumamos las partes reunidas: ${n1} + ${n2} = ${sumN}.` },
-      { value: `${sumN}/${D + D}`, correct: false, errorCode: "ERR_DIRECT", feedback: `Alerta: Sumaste denominadores (${D}+${D}=${D + D}). Las divisiones del tanque no se duplican al juntar agua.` },
-      { value: `${n1}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste el primer balde de agua. No olvides sumar el segundo.` },
-      { value: `${n2}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste el segundo balde de agua. Falta el primero.` },
-      { value: `${n1 * n2}/${D}`, correct: false, errorCode: "ERR_GENERIC", feedback: `Multiplicaste las partes de agua en vez de sumarlas.` },
-      { value: `${sumN}/${D * 2 + 2}`, correct: false, errorCode: "ERR_GENERIC", feedback: `Calibración errónea. El agua no coincide con el tamaño del tanque.` }
+      { value: `${sumN}/${D}`, correct: true, feedback: `¡Señal sintonizada! Con igual canal orbital (${D}) sumamos numeradores: ${n1} + ${n2} = ${sumN}.` },
+      { value: `${sumN}/${D + D}`, correct: false, errorCode: "ERR_DIRECT", feedback: `Alerta: Sumaste denominadores (${D}+${D}=${D + D}). En el mismo canal orbital, el denominador no cambia.` },
+      { value: `${n1}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la primera sonda. No olvides sumar la segunda.` },
+      { value: `${n2}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la segunda sonda. Falta la inicial.` },
+      { value: `${n1 * n2}/${D}`, correct: false, errorCode: "ERR_GENERIC", feedback: `Multiplicaste los numeradores en vez de sumarlos.` }
     ];
-
-    return { equation: `${n1}/${D} + ${n2}/${D} = ?`, n1, n2, D, options: prepareOptions(raw) };
+    return {
+      equation: `${n1}/${D} + ${n2}/${D} = ?`,
+      narrative: `Dos señales orbitales de ${n1}/${D} y ${n2}/${D} laten en la misma frecuencia. Sintonizá los mandos para combinarlas sobre la base orbital ${D}.`,
+      n1, n2, D,
+      options: prepareOptions(raw)
+    };
   },
-
   generateM2() {
-    // Escenarios de múltiplo puro que no requieren simplificación
     const scenarios = [
+      { d1: 2, d2: 4, n1: 1, n2: 1, correct: "3/4", errDirect: "2/6", errLcd: "2/8", errPartial: "1/2", d1Val: "1/4", d2Val: "5/4", fb: "Denominador común 4: 1/2 equivale a 2/4. Sumando: 2/4 + 1/4 = 3/4." },
+      { d1: 3, d2: 6, n1: 1, n2: 1, correct: "3/6", errDirect: "2/9", errLcd: "2/18", errPartial: "1/3", d1Val: "1/6", d2Val: "4/6", fb: "Denominador común 6: 1/3 equivale a 2/6. Sumando: 2/6 + 1/6 = 3/6." },
       { d1: 4, d2: 8, n1: 1, n2: 1, correct: "3/8", errDirect: "2/12", errLcd: "2/32", errPartial: "1/4", d1Val: "1/8", d2Val: "5/8", fb: "Denominador común 8: 1/4 equivale a 2/8. Sumando: 2/8 + 1/8 = 3/8." },
-      { d1: 3, d2: 9, n1: 1, n2: 1, correct: "4/9", errDirect: "2/12", errLcd: "2/27", errPartial: "1/3", d1Val: "1/9", d2Val: "5/9", fb: "Denominador común 9: 1/3 equivale a 3/9. Sumando: 3/9 + 1/9 = 4/9." },
-      { d1: 2, d2: 8, n1: 1, n2: 1, correct: "5/8", errDirect: "2/10", errLcd: "2/16", errPartial: "1/2", d1Val: "1/8", d2Val: "6/8", fb: "Denominador común 8: 1/2 equivale a 4/8. Sumando: 4/8 + 1/8 = 5/8." },
       { d1: 5, d2: 10, n1: 1, n2: 1, correct: "3/10", errDirect: "2/15", errLcd: "2/50", errPartial: "1/5", d1Val: "1/10", d2Val: "4/10", fb: "Denominador común 10: 1/5 equivale a 2/10. Sumando: 2/10 + 1/10 = 3/10." },
-      { d1: 3, d2: 9, n1: 2, n2: 1, correct: "7/9", errDirect: "3/12", errLcd: "3/27", errPartial: "2/3", d1Val: "4/9", d2Val: "8/9", fb: "Denominador común 9: 2/3 equivale a 6/9. Sumando: 6/9 + 1/9 = 7/9." }
+      { d1: 2, d2: 6, n1: 1, n2: 1, correct: "4/6", errDirect: "2/8", errLcd: "2/12", errPartial: "1/2", d1Val: "2/6", d2Val: "5/6", fb: "Denominador común 6: 1/2 equivale a 3/6. Sumando: 3/6 + 1/6 = 4/6." },
+      { d1: 3, d2: 9, n1: 2, n2: 1, correct: "7/9", errDirect: "3/12", errLcd: "3/27", errPartial: "2/3", d1Val: "4/9", d2Val: "5/9", fb: "Denominador común 9: 2/3 equivale a 6/9. Sumando: 6/9 + 1/9 = 7/9." }
     ];
     const choice = scenarios[Math.floor(Math.random() * scenarios.length)];
     const raw = [
-      { value: choice.correct, correct: true, feedback: `¡Alimentos unificados con éxito! ${choice.fb}` },
-      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `No sumes directamente los tamaños de las cajas (${choice.d1}+${choice.d2}). Primero unificá los tamaños de las porciones.` },
-      { value: choice.errPartial, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la caja principal de alimentos. Falta el aporte de la caja auxiliar.` },
-      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Multiplicaste los denominadores sin amplificar numeradores.` },
-      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste las porciones de la caja auxiliar, olvidando la principal.` },
-      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Almacenamiento erróneo. El alimento sobrepasa la capacidad física de las cajas.` }
+      { value: choice.correct, correct: true, feedback: `¡Válvula calibrada! ${choice.fb}` },
+      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `No sumes directamente denominadores (${choice.d1}+${choice.d2}). Buscá la base común.` },
+      { value: choice.errPartial, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el primer depósito. Te falta el auxiliar.` },
+      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Multiplicaste denominadores sin amplificar numeradores.` },
+      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el depósito auxiliar sin el principal.` },
+      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Flujo sobrecargado. Revisá la proporción con lápiz y papel.` }
     ];
-
-    return { equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, n1: choice.n1, d1: choice.d1, n2: choice.n2, d2: choice.d2, correctVal: choice.correct, options: prepareOptions(raw) };
+    return {
+      equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`,
+      narrative: `El tanque principal tiene ${choice.n1}/${choice.d1} de combustible y el auxiliar aporta ${choice.n2}/${choice.d2}. Calibrá las válvulas inyectoras para calcular la suma.`,
+      d1: choice.d1, d2: choice.d2,
+      options: prepareOptions(raw)
+    };
   },
-
   generateM3() {
-    // Escenarios con simplificación real para enlazar
     const scenarios = [
-      { d1: 3, d2: 6, n1: 1, n2: 1, displayCorrect: "1/2", errDirect: "2/9", errLcd: "2/18", d1Val: "1/3", d2Val: "4/6", d3Val: "2/3", fb: "1/3 + 1/6 = 3/6. Simplificado por 3 da la porción de 1/2." },
-      { d1: 4, d2: 12, n1: 1, n2: 1, displayCorrect: "1/3", errDirect: "2/16", errLcd: "2/48", d1Val: "1/4", d2Val: "3/12", d3Val: "5/12", fb: "1/4 + 1/12 = 4/12. Simplificado por 4 da la porción de 1/3." },
+      { d1: 3, d2: 6, n1: 1, n2: 1, displayCorrect: "1/2", errDirect: "2/9", errLcd: "2/18", d1Val: "1/3", d2Val: "4/6", d3Val: "2/3", fb: "1/3 + 1/6 = 3/6. Simplificado por 3 da la frecuencia pura de 1/2." },
+      { d1: 4, d2: 12, n1: 1, n2: 1, displayCorrect: "1/3", errDirect: "2/16", errLcd: "2/48", d1Val: "1/4", d2Val: "3/12", d3Val: "5/12", fb: "1/4 + 1/12 = 4/12. Simplificado por 4 da la frecuencia pura de 1/3." },
       { d1: 6, d2: 10, n1: 1, n2: 1, displayCorrect: "4/15", errDirect: "2/16", errLcd: "2/60", d1Val: "1/6", d2Val: "1/10", d3Val: "7/30", fb: "MCM 30: 5/30 + 3/30 = 8/30, que simplificado es 4/15." },
       { d1: 2, d2: 10, n1: 1, n2: 1, displayCorrect: "3/5", errDirect: "2/12", errLcd: "2/20", d1Val: "1/2", d2Val: "4/10", d3Val: "7/10", fb: "1/2 + 1/10 = 5/10 + 1/10 = 6/10, que simplificado por 2 da 3/5." },
       { d1: 5, d2: 15, n1: 2, n2: 1, displayCorrect: "7/15", errDirect: "3/20", errLcd: "3/75", d1Val: "2/5", d2Val: "4/15", d3Val: "8/15", fb: "2/5 + 1/15 = 6/15 + 1/15 = 7/15 (fracción irreducible)." }
     ];
     const choice = scenarios[Math.floor(Math.random() * scenarios.length)];
     const raw = [
-      { value: choice.displayCorrect, correct: true, feedback: `¡Conexión eléctrica exitosa! ${choice.fb}` },
-      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `Sumar directo no sirve cuando las bases de conexión difieren.` },
+      { value: choice.displayCorrect, correct: true, feedback: `¡Órbitas enlazadas! ${choice.fb}` },
+      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `Sumar directo no sirve cuando las frecuencias orbitales difieren.` },
       { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Buscaste base común pero olvidaste amplificar numeradores.` },
-      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste el aporte del primer tramo del cableado eléctrico.` },
-      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Señal distorsionada. Revisá la simplificación a su fracción irreducible en papel.` },
-      { value: choice.d3Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Desvío al buscar el mínimo común múltiplo en las tablas de multiplicar.` }
+      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Falta enlazar la trayectoria del segundo módulo.` },
+      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Frecuencia distorsionada. Revisá la simplificación con lápiz y papel.` },
+      { value: choice.d3Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Desvío en el cálculo del mínimo común múltiplo.` }
     ];
-
-    return { equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, n1: choice.n1, d1: choice.d1, n2: choice.n2, d2: choice.d2, correctVal: choice.displayCorrect, options: prepareOptions(raw) };
+    return {
+      equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`,
+      narrative: `Dos módulos deben empalmar sus órbitas. Uno avanzó ${choice.n1}/${choice.d1} del recorrido, el otro ${choice.n2}/${choice.d2}. Enlazá las órbitas simplificando al valor más puro.`,
+      d1: choice.d1, d2: choice.d2,
+      options: prepareOptions(raw)
+    };
   },
-
   generateM4() {
-    const variants = [
+    const m4Variants = [
       {
-        steps: [
-          {
-            title: "Paso 1: Suministro Colectivo de Agua (M1)",
-            prompt: "Tres grupos vuelcan sus raciones de agua en el tanque común: 1/6 + 2/6 + 1/6. ¿Qué porción del tanque de agua lograron llenar en total?",
-            rawOptions: [
-              { value: "4/6", correct: true, feedback: "¡Exacto! Al tener el mismo tamaño de porciones se suman los de arriba: 1 + 2 + 1 = 4 sobre 6." },
-              { value: "4/18", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste los denominadores (6+6+6). Los tanques no se duplican, el tamaño de la porción se mantiene igual." },
-              { value: "3/6", correct: false, errorCode: "ERR_PARTIAL", feedback: "Omitiste sumar el agua aportada por el tercer grupo." },
-              { value: "4/12", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste los denominadores de solo dos aportes." },
-              { value: "1/6", correct: false, errorCode: "ERR_PARTIAL", feedback: "Este es solo el aporte de agua del primer grupo." },
-              { value: "4/24", correct: false, errorCode: "ERR_LCD", feedback: "Multiplicaste los tanques en lugar de mantener la base común." }
-            ]
-          },
-          {
-            title: "Paso 2: Contenedor Completo de Alimento (M2)",
-            prompt: "El refugio exige completar una caja de raciones al 100% (1 entero = 4/4). Tres depósitos entregan: 1/4 + 1/4 + 1/2. ¿Alcanza el alimento para completar la caja entera?",
-            rawOptions: [
-              { value: "Sí alcanza: suman 4/4 (1 entero) y entregan el 100% de la caja.", correct: true, feedback: "¡Exacto! 1/4 + 1/4 = 2/4. Al sumar 1/2 (que equivale a 2/4), completamos la caja entera: 4/4 = 1 entero." },
-              { value: "No alcanza: apenas juntamos 3/10 de caja.", correct: false, errorCode: "ERR_DIRECT", feedback: "Suma directa errónea. Sumaste numeradores y denominadores linealmente (1+1+1 sobre 4+4+2)." },
-              { value: "No alcanza: sumamos 3/4 y todavía falta 1/4.", correct: false, errorCode: "ERR_LCD", feedback: "Error de base. Sumaste numeradores sin amplificar previamente el 1/2 a cuartos (2/4)." },
-              { value: "Sí alcanza: sumamos 2/4 de los dos primeros y el 1/2 no se suma.", correct: false, errorCode: "ERR_PARTIAL", feedback: "Medición incompleta. Ignoraste el aporte del tercer depósito de raciones." },
-              { value: "Sobra potencia: sobrecargamos con 5/4.", correct: false, errorCode: "ERR_GENERIC", feedback: "Multiplicación errónea. Multiplicaste arriba y abajo en exceso al intentar amplificar." },
-              { value: "No alcanza: los depósitos apenas entregan 3/8.", correct: false, errorCode: "ERR_LCD", feedback: "Error de cálculo. No se encontró el denominador común correcto." }
-            ]
-          },
-          {
-            title: "Paso 3: Estimación de Consumo Semanal (M3)",
-            prompt: "El refugio consumió 3/4 de sus raciones de agua guardadas en un plazo de 3 semanas. Al mismo ritmo, ¿cuántas semanas faltan para consumir la totalidad del tanque (4/4)?",
-            rawOptions: [
-              { value: "1 semana restante", correct: true, feedback: "¡Exacto! Si 3 partes de 4 tomaron 3 semanas, cada cuarto (1/4) dura 1 semana. Falta 1/4 = 1 semana restante." },
-              { value: "4 semanas de consumo restantes", correct: false, errorCode: "ERR_GENERIC", feedback: "4 semanas es la duración total del suministro completo, no el tiempo que falta." },
-              { value: "3/4 de semana (5 días)", correct: false, errorCode: "ERR_COMPARE", feedback: "Confundiste la fracción con la escala de días." },
-              { value: "2 semanas restantes", correct: false, errorCode: "ERR_GENERIC", feedback: "Estimación errónea sin aplicar la proporción directa del tiempo transcurrido." },
-              { value: "1/4 de semana", correct: false, errorCode: "ERR_COMPARE", feedback: "1/4 de suministro de agua a este ritmo equivale a 1 semana entera." },
-              { value: "6 semanas restantes", correct: false, errorCode: "ERR_GENERIC", feedback: "Duplicaste las semanas en lugar de calcular el cuarto restante." }
-            ]
-          },
-          {
-            title: "Paso 4: Justificación del Encargado del Refugio",
-            prompt: "¿Cuál fue el razonamiento matemático que usaste en el paso anterior para saber que faltaba exactamente 1 semana?",
-            rawOptions: [
-              { value: "Si 3 cuartos duraron 3 semanas, cada cuarto (1/4) dura 1 semana. Como falta solo 1 cuarto para consumir la unidad entera (4/4), falta 1 semana.", correct: true, justificationType: "Master", feedback: "¡Dominio conceptual absoluto de la fracción como magnitud y proporción continua!" },
-              { value: "Hice un cálculo aproximado mental sabiendo que 3 semanas era casi todo el suministro y 1 semana sonaba razonable.", correct: true, justificationType: "Intuitive", feedback: "¡Aceptado por intuición! Buen cálculo de proporción mental." },
-              { value: "Resté 4 menos 3 directamente porque son los números que aparecían escritos en la fracción 3/4.", correct: false, justificationType: "Failed", errorCode: "ERR_DIRECT", feedback: "Restar los números de forma aislada (4 - 3) no justifica matemáticamente una proporción." },
-              { value: "Supuse que 3/4 de cualquier tanque siempre equivale a 3 semanas fijas de reloj.", correct: false, justificationType: "Failed", errorCode: "ERR_COMPARE", feedback: "El consumo de agua depende del número de personas y la velocidad de consumo, no es una constante fija." }
-            ]
-          }
-        ]
+        prompt1: "Tanque A aporta 1/4, Tanque B aporta 1/6 y Tanque C aporta 1/3. ¿Cuál es el mínimo común denominador entre 4, 6 y 3?",
+        prompt2: "Convertí los tres tanques a doceavos y sumalos: 1/4 + 1/6 + 1/3 = ?",
+        prompt3: "El propulsor necesita al menos 2/3 (8/12) de carga para despegar. Tenés 9/12 (3/4). ¿Alcanza?",
+        mcm: "12", sumResult: "9/12",
+        fb1: "12 es el menor número que es múltiplo de 4, 6 y 3 a la vez.",
+        fb2: "1/4=3/12, 1/6=2/12, 1/3=4/12. Sumados: 9/12, es decir 3/4.",
+        fb3: "3/4 = 9/12 y 2/3 = 8/12: hay más combustible del mínimo necesario."
+      },
+      {
+        prompt1: "Tanque A aporta 1/2, Tanque B aporta 1/4 y Tanque C aporta 1/8. ¿Cuál es el mínimo común denominador entre 2, 4 y 8?",
+        prompt2: "Convertí los tres tanques a octavos y sumalos: 1/2 + 1/4 + 1/8 = ?",
+        prompt3: "El propulsor necesita al menos 3/4 (6/8) de carga para despegar. Tenés 7/8. ¿Alcanza?",
+        mcm: "8", sumResult: "7/8",
+        fb1: "8 es el menor múltiplo común de 2, 4 y 8.",
+        fb2: "1/2=4/8, 1/4=2/8, 1/8=1/8. Sumados: 7/8.",
+        fb3: "7/8 es mayor que 6/8 (3/4): la potencia es suficiente para la maniobra."
+      },
+      {
+        prompt1: "Sonda A aporta 1/3, Sonda B aporta 1/5 y Sonda C aporta 1/15. ¿Cuál es la frecuencia común (MCM) entre 3, 5 y 15?",
+        prompt2: "Convertí las tres sondas a quinceavos y sumalas: 1/3 + 1/5 + 1/15 = ?",
+        prompt3: "La antena necesita al menos 2/5 (6/15) de potencia para fijar curso. Tenés 9/15. ¿Alcanza?",
+        mcm: "15", sumResult: "9/15",
+        fb1: "15 es el mínimo común múltiplo entre 3, 5 y 15.",
+        fb2: "1/3=5/15, 1/5=3/15, 1/15=1/15. Sumados: 9/15.",
+        fb3: "9/15 es mayor que 6/15: señal suficiente fijada."
       }
     ];
-    const chosenVariant = variants[Math.floor(Math.random() * variants.length)];
-    return chosenVariant.steps.map((st) => ({
-      ...st,
-      options: prepareOptions(st.rawOptions)
-    }));
+
+    const v = m4Variants[Math.floor(Math.random() * m4Variants.length)];
+
+    return [
+      {
+        title: "Paso 1: Mínimo Común Denominador",
+        prompt: v.prompt1,
+        options: prepareOptions([
+          { value: v.mcm, correct: true, feedback: v.fb1 },
+          { value: String(parseInt(v.mcm) * 2), correct: false, errorCode: "ERR_LCD", feedback: "Es múltiplo común pero no el mínimo." },
+          { value: String(parseInt(v.mcm) + 6), correct: false, errorCode: "ERR_LCD", feedback: "No es múltiplo de todos los denominadores." },
+          { value: String(parseInt(v.mcm) * 3), correct: false, errorCode: "ERR_LCD", feedback: "Buscá el menor múltiplo común." }
+        ])
+      },
+      {
+        title: "Paso 2: Suma de Tres Fracciones",
+        prompt: v.prompt2,
+        options: prepareOptions([
+          { value: v.sumResult, correct: true, feedback: v.fb2 },
+          { value: "3/" + (parseInt(v.mcm) * 3), correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores linealmente." },
+          { value: "5/" + v.mcm, correct: false, errorCode: "ERR_PARTIAL", feedback: "Faltó incorporar uno de los tres depósitos." },
+          { value: "2/" + v.mcm, correct: false, errorCode: "ERR_PARTIAL", feedback: "Solo convertiste dos tanques." }
+        ])
+      },
+      {
+        title: "Paso 3: Comparación con Requisito Crítico",
+        prompt: v.prompt3,
+        options: prepareOptions([
+          { value: "Sí, alcanza y supera el mínimo requerido", correct: true, feedback: v.fb3 },
+          { value: "No, falta potencia", correct: false, errorCode: "ERR_COMPARE", feedback: "Compará los numeradores sobre la misma base." },
+          { value: "Es exactamente igual al mínimo", correct: false, errorCode: "ERR_COMPARE", feedback: "Revisá los valores numeradores." },
+          { value: "Indeterminado", correct: false, errorCode: "ERR_COMPARE", feedback: "Llevando a la misma base se compara directamente." }
+        ])
+      },
+      {
+        title: "Paso 4: Justificación Científica",
+        prompt: "¿Cuál fue tu razonamiento formal para confirmar el despegue?",
+        options: prepareOptions([
+          { value: "Convertí las 3 fracciones al mínimo común denominador, las sumé y comparé el total contra el requisito sobre la misma base.", correct: true, justificationType: "Master", feedback: "¡Explicación científica impecable!" },
+          { value: "Hice una estimación aproximada calculando las porciones visualmente.", correct: true, justificationType: "Intuitive", feedback: "¡Buen cálculo intuitivo!" },
+          { value: "Sumé numeradores y denominadores por separado.", correct: false, justificationType: "Failed", errorCode: "ERR_DIRECT", feedback: "Suma directa de partes no es válida." }
+        ])
+      }
+    ];
   }
 };
 
@@ -1211,12 +1080,37 @@ const m4ToggleStyles = {
 export default function App() {
   const { playCorrect, playError, playRobotChat, playMissionDone, playBadge } = useGameFeedback();
 
+  // Helper para leer/guardar estado persistente del alumno en LocalStorage
+  const loadStudentSavedState = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("edumision_student_progress_v3");
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return null;
+  };
+  const savedProg = loadStudentSavedState();
+
+  // UUID único persistente del alumno
+  const [studentUuid] = useState(() => {
+    if (typeof window !== "undefined") {
+      let u = localStorage.getItem("edumision_student_uuid");
+      if (!u) {
+        u = "std-" + Math.random().toString(36).substring(2, 9) + "-" + Date.now().toString(36);
+        localStorage.setItem("edumision_student_uuid", u);
+      }
+      return u;
+    }
+    return "std-demo-123456";
+  });
+
   // Gestión de Nickname persistente en LocalStorage
   const [studentNickname, setStudentNickname] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("edumision_nickname") || "Martín G. (Tú)";
+      return localStorage.getItem("edumision_nickname") || "Martín G.";
     }
-    return "Martín G. (Tú)";
+    return "Martín G.";
   });
 
   const shipName = "";
@@ -1252,24 +1146,19 @@ export default function App() {
   }, []);
 
   // 🎯 SISTEMA DE XP Y ERRORES EXACTOS POR MISIÓN
-  const [missionXp, setMissionXp] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [missionXp, setMissionXp] = useState(() => savedProg?.missionXp || { m1: 0, m2: 0, m3: 0, m4: 0 });
   const [currentMissionErrors, setCurrentMissionErrors] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
 
   const [floatingXp, setFloatingXp] = useState(null);
-  const [activeMission, setActiveMission] = useState("m1");
-  const [missionStatus, setMissionStatus] = useState({
-    m1: "activa",
-    m2: "bloqueada",
-    m3: "bloqueada",
-    m4: "bloqueada"
-  });
+  const [activeMission, setActiveMission] = useState(() => savedProg?.activeMission || "m1");
+  const [missionStatus, setMissionStatus] = useState(() => savedProg?.missionStatus || { m1: "activa", m2: "bloqueada", m3: "bloqueada", m4: "bloqueada" });
 
   const [currentLevelData, setCurrentLevelData] = useState(() => MathGenerator.generateM1());
   const [selectedOption, setSelectedOption] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [attempts, setAttempts] = useState(0);
-  const [badgeEarned, setBadgeEarned] = useState(false);
-  const [interestLogged, setInterestLogged] = useState(false);
+  const [badgeEarned, setBadgeEarned] = useState(() => savedProg?.badgeEarned || false);
+  const [interestLogged, setInterestLogged] = useState(() => savedProg?.interestLogged || false);
 
   // MEDICIÓN DE TIEMPO DE RESPUESTA EN M4 PARA DETECTAR FRAUDE (Soporte Padres / Calculadora)
   const m4StartTimeRef = useRef(null);
@@ -1293,11 +1182,31 @@ export default function App() {
   const timerRef = useRef(null);
   const [loginTime] = useState(new Date().toLocaleTimeString("es-AR"));
 
-  const [helpsRequested, setHelpsRequested] = useState(0);
-  const [totalErrors, setTotalErrors] = useState(0);
-  const [helpsPerMission, setHelpsPerMission] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
-  const [errorsPerMission, setErrorsPerMission] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [helpsRequested, setHelpsRequested] = useState(() => savedProg?.helpsRequested || 0);
+  const [totalErrors, setTotalErrors] = useState(() => savedProg?.totalErrors || 0);
+  const [helpsPerMission, setHelpsPerMission] = useState(() => savedProg?.helpsPerMission || { m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [errorsPerMission, setErrorsPerMission] = useState(() => savedProg?.errorsPerMission || { m1: 0, m2: 0, m3: 0, m4: 0 });
   const [teacherMessage, setTeacherMessage] = useState("¡Buen viaje espacial, tripulante! Lee con atención cada señal.");
+
+    // Guardado automático del progreso del alumno en LocalStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("edumision_student_progress_v3", JSON.stringify({
+          studentNickname,
+          missionXp,
+          missionStatus,
+          activeMission,
+          badgeEarned,
+          helpsRequested,
+          totalErrors,
+          helpsPerMission,
+          errorsPerMission,
+          interestLogged
+        }));
+      } catch (e) {}
+    }
+  }, [studentNickname, missionXp, missionStatus, activeMission, badgeEarned, helpsRequested, totalErrors, helpsPerMission, errorsPerMission, interestLogged]);
 
   const totalXp = missionXp.m1 + missionXp.m2 + missionXp.m3 + missionXp.m4;
 
@@ -1802,6 +1711,19 @@ export default function App() {
           onClick={() => {
             setShowTeacherModal(false);
             playRobotChat();
+            // Registrar docente en servidor LRS para balanceo de carga
+            try {
+              const tid = (teacherInfo.name + "-" + teacherInfo.curso).toLowerCase().trim().replace(/\s+/g, '-');
+              fetch("/api/lrs?action=register_teacher", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  teacher_id: tid,
+                  teacher_name: teacherInfo.name,
+                  curso_id: teacherInfo.curso
+                })
+              }).catch((e) => console.log("LRS Teacher Reg Error:", e));
+            } catch (e) {}
           }}
           style={{ ...styles.parentModalBtn, backgroundColor: "#8b5cf6", color: "#ffffff", boxShadow: "0 0 15px rgba(139, 92, 246, 0.5)" }}
           type="button"
