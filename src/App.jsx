@@ -1380,6 +1380,22 @@ export default function App() {
       { time: timestamp, action: `[xAPI:${verb.toUpperCase()}] ${action}`, type },
       ...prev
     ]);
+
+    // 📡 Ingesta de Telemetría xAPI en tiempo real al LRS en Vercel (/api/lrs)
+    try {
+      fetch("/api/lrs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actor: { name: studentNickname || "Alumna", uuid: "7a3b2c1d-4e5f-6a7b-8c9d-0e1f2a3b4c5d" },
+          verb: { id: verb, display: { "es-AR": verb } },
+          object: { id: activeMission, description: action },
+          timestamp: new Date().toISOString()
+        })
+      }).catch((err) => console.log("LRS Buffer Offline:", err));
+    } catch (e) {
+      console.log("Error enviando telemetría xAPI:", e);
+    }
   };
 
   // Sincronizar Roster Docente en tiempo real
