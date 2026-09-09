@@ -1225,6 +1225,8 @@ export default function App() {
 
   // Estados de navegación y roles
   const [showStudentWelcome, setShowStudentWelcome] = useState(true);
+  const [showTeacherModal, setShowTeacherModal] = useState(true);
+  const [teacherInfo, setTeacherInfo] = useState({ name: "Profe Laura", curso: "1° Año B", cursoId: "curso-demo-1a" });
   const [showInstructionModal, setShowInstructionModal] = useState(null);
   const [view, setView] = useState("alumno");
   const [students, setStudents] = useState(INITIAL_STUDENTS);
@@ -1390,6 +1392,8 @@ export default function App() {
           actor: { name: studentNickname || "Alumna", uuid: "7a3b2c1d-4e5f-6a7b-8c9d-0e1f2a3b4c5d" },
           verb: { id: verb, display: { "es-AR": verb } },
           object: { id: activeMission, description: action },
+          xp: totalXp,
+          errors: totalErrors,
           timestamp: new Date().toISOString()
         })
       }).catch((err) => console.log("LRS Buffer Offline:", err));
@@ -1750,7 +1754,65 @@ export default function App() {
         </div>
       )}
 
-      {/* 🌌 EFECTO DE TRANSICIÓN HIPERESPACIAL */}
+      
+  {/* 👩‍🏫 MODAL DE ACCESO DOCENTE */}
+  {showTeacherModal && view === "docente" && (
+    <div style={styles.parentModalOverlay}>
+      <div style={{ ...styles.parentModalCard, borderColor: "#8b5cf6", boxShadow: "0 0 30px rgba(139, 92, 246, 0.4)" }}>
+        <div style={{ ...styles.parentModalTitle, color: "#c084fc" }}>
+          <span>👩‍🏫</span> ACCESO A CONSOLA DOCENTE
+        </div>
+        <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "16px", lineHeight: "1.4" }}>
+          Ingresá tu nombre y curso para activar el seguimiento de trayectorias e integrar tu lista de alumnos en vivo.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+          <div style={{ textAlign: "left" }}>
+            <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
+              Nombre del Docente:
+            </label>
+            <input
+              type="text"
+              value={teacherInfo.name}
+              onChange={(e) => setTeacherInfo({ ...teacherInfo, name: e.target.value })}
+              placeholder="Ej: Profe Laura"
+              style={styles.teacherDashboardInput}
+            />
+          </div>
+
+          <div style={{ textAlign: "left" }}>
+            <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
+              Curso / División:
+            </label>
+            <input
+              type="text"
+              value={teacherInfo.curso}
+              onChange={(e) => {
+                const cursoVal = e.target.value;
+                const slug = "curso-" + cursoVal.toLowerCase().replace(/[^a-z0-9]/g, "");
+                setTeacherInfo({ ...teacherInfo, curso: cursoVal, cursoId: slug || "curso-demo-1a" });
+              }}
+              placeholder="Ej: 1° Año B"
+              style={styles.teacherDashboardInput}
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            setShowTeacherModal(false);
+            playRobotChat();
+          }}
+          style={{ ...styles.parentModalBtn, backgroundColor: "#8b5cf6", color: "#ffffff", boxShadow: "0 0 15px rgba(139, 92, 246, 0.5)" }}
+          type="button"
+        >
+          🚀 INGRESAR A LA CONSOLA
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* 🌌 EFECTO DE TRANSICIÓN HIPERESPACIAL */}
       {transitionPhase && <HyperspaceJump />}
 
       {/* ❓ MODAL DE INSTRUCCIONES TÁCTILES */}
@@ -2226,6 +2288,8 @@ export default function App() {
           teacherMessage={teacherMessage}
           setTeacherMessage={setTeacherMessage}
           copyDirectLink={copyDirectLink}
+          teacherInfo={teacherInfo}
+          setShowTeacherModal={setShowTeacherModal}
         />
       )}
     </div>
@@ -2235,10 +2299,49 @@ export default function App() {
 // ==========================================
 // 📊 PANEL DOCENTE INTERACTIVO
 // ==========================================
-function TeacherDashboard({ students, setStudents, teacherMessage, setTeacherMessage, copyDirectLink }) {
+function TeacherDashboard({ students, setStudents, teacherMessage, setTeacherMessage, copyDirectLink, teacherInfo, setShowTeacherModal }) {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [inputMsg, setInputMsg] = useState(teacherMessage);
   const [pedagogicalPopup, setPedagogicalPopup] = useState(null);
+  const [liveLrsConnected, setLiveLrsConnected] = useState(false);
+
+  // 📡 POLLING DE TELEMETRÍA EN VIVO AL LRS (/api/lrs)
+  // Permite que los chicos que se van sumando aparezcan automáticamente en la lista del docente
+  useEffect(() => {
+    const fetchLrsData = async () => {
+      try {
+        const res = await fetch(`/api/lrs?curso_id=${encodeURIComponent(teacherInfo?.cursoId || "curso-demo-1a")}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLiveLrsConnected(true);
+          if (data.students && data.students.length > 0) {
+            setStudents((prev) => {
+              const existingUuids = new Set(prev.map((s) => s.uuid));
+              const merged = [...prev];
+              data.students.forEach((incoming) => {
+                if (!existingUuids.has(incoming.uuid)) {
+                  merged.push(incoming);
+                } else {
+                  // Actualizar datos del estudiante existente con la telemetría real
+                  const idx = merged.findIndex((s) => s.uuid === incoming.uuid);
+                  if (idx !== -1) {
+                    merged[idx] = { ...merged[idx], ...incoming };
+                  }
+                }
+              });
+              return merged;
+            });
+          }
+        }
+      } catch (err) {
+        console.log("Polling LRS:", err);
+      }
+    };
+
+    fetchLrsData();
+    const interval = setInterval(fetchLrsData, 4000); // Polling cada 4 segundos
+    return () => clearInterval(interval);
+  }, [setStudents]);
 
   const totalStudents = students.length;
   const activeStudents = students.filter(s => s.xp > 0 || s.id === 1).length;
@@ -2420,6 +2523,9 @@ function TeacherDashboard({ students, setStudents, teacherMessage, setTeacherMes
             📋 Link Chicos
           </button>
           <span style={styles.teacherBadge}>👩‍🏫 DOCENTE AUTENTICADA</span>
+          <span style={{ ...styles.teacherBadge, backgroundColor: "rgba(16, 185, 129, 0.15)", color: "#4ade80", borderColor: "#10b981" }}>
+            🟢 LRS EN VIVO: {students.length} ALUMNOS
+          </span>
         </div>
       </header>
 
