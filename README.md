@@ -1,2 +1,0 @@
-# edumision
-Created with CodeSandbox
