@@ -1,10 +1,10 @@
-// Endpoint LRS para Vercel Serverless Function (/api/lrs)
-// Registra telemetría xAPI de alumnos y sirve el Roster en vivo al Panel Docente
+// Endpoint LRS / API en Vercel Serverless Function (/api/lrs)
+// Manejo multi-aula con aislamiento por docente_id / curso_id
 
 if (!global.edumisionLRS) {
   global.edumisionLRS = {
     statements: [],
-    activeStudents: {}
+    courses: {} // Almacena el roster aislado por curso
   };
 }
 
@@ -17,10 +17,11 @@ export default function handler(req, res) {
     return res.status(200).end();
   }
 
-  // 1. RECEPCIÓN DE TELEMETRÍA XAPI (DESDE EL CELULAR DEL ALUMNO)
+  // 1. INGESTA DE TELEMETRÍA XAPI (DESDE EL CELULAR DEL ALUMNO)
   if (req.method === 'POST') {
     const statement = req.body || {};
     const actor = statement.actor || {};
+    const cursoId = statement.curso_id || "curso-demo-1a";
     const uuid = actor.uuid || "anon-student";
     const name = actor.name || "Alumno/a";
     const verb = statement.verb?.id || "interacted";
@@ -29,25 +30,20 @@ export default function handler(req, res) {
     const xp = statement.xp || 0;
     const errors = statement.errors || 0;
 
-    // Registrar evento xAPI
-    const newEntry = {
-      timestamp: new Date().toLocaleTimeString("es-AR"),
-      uuid,
-      name,
-      verb,
-      object,
-      action
-    };
-
-    global.edumisionLRS.statements.unshift(newEntry);
-    if (global.edumisionLRS.statements.length > 100) {
-      global.edumisionLRS.statements.pop();
+    // Asegurar estructura del curso aislado
+    if (!global.edumisionLRS.courses[cursoId]) {
+      global.edumisionLRS.courses[cursoId] = {
+        teacherMessage: "¡Bienvenidos a la cabina espacial! Lean con atención.",
+        students: {}
+      };
     }
 
-    // Incorporar automáticamente al chico nuevo al Roster del aula
-    if (!global.edumisionLRS.activeStudents[uuid]) {
-      global.edumisionLRS.activeStudents[uuid] = {
-        id: Object.keys(global.edumisionLRS.activeStudents).length + 10,
+    const currentCourse = global.edumisionLRS.courses[cursoId];
+
+    // Registrar o actualizar alumno dentro de la nómina de su curso
+    if (!currentCourse.students[uuid]) {
+      currentCourse.students[uuid] = {
+        id: Object.keys(currentCourse.students).length + 1,
         name: name,
         shipName: `Nave ${name}`,
         uuid: uuid,
@@ -65,8 +61,7 @@ export default function handler(req, res) {
         }
       };
     } else {
-      // Actualizar progreso del chico en tiempo real
-      const st = global.edumisionLRS.activeStudents[uuid];
+      const st = currentCourse.students[uuid];
       st.name = name;
       st.xp = Math.max(st.xp, xp);
       st.errorsCount = Math.max(st.errorsCount, errors);
@@ -78,21 +73,23 @@ export default function handler(req, res) {
 
     return res.status(200).json({
       status: "persisted",
-      timestamp: new Date().toISOString(),
-      studentCount: Object.keys(global.edumisionLRS.activeStudents).length
+      cursoId: cursoId,
+      studentCount: Object.keys(currentCourse.students).length
     });
   }
 
-  // 2. CONSULTA EN VIVO DEL ROSTER Y MÉTRICAS (DESDE EL PANEL DOCENTE)
+  // 2. CONSULTA EN VIVO DEL ROSTER AISLADO POR CURSO (PARA EL DOCENTE)
   if (req.method === 'GET') {
-    const studentsList = Object.values(global.edumisionLRS.activeStudents);
+    const cursoId = req.query.curso_id || "curso-demo-1a";
+    const courseData = global.edumisionLRS.courses[cursoId] || { teacherMessage: "", students: {} };
+    const studentsList = Object.values(courseData.students);
 
     return res.status(200).json({
       status: "active",
-      serverTime: new Date().toLocaleTimeString("es-AR"),
+      cursoId: cursoId,
+      teacherMessage: courseData.teacherMessage,
       totalActiveStudents: studentsList.length,
-      students: studentsList,
-      recentStatements: global.edumisionLRS.statements.slice(0, 15)
+      students: studentsList
     });
   }
 
