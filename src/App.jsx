@@ -670,14 +670,19 @@ const astroStyles = {
   copilotName: { fontSize: "14px", fontWeight: "900", color: "#c084fc", letterSpacing: "1px" },
   copilotSub: { fontSize: "11px", color: "#94a3b8", marginBottom: "6px" },
   hintBtn: {
-    padding: "6px 12px",
-    backgroundColor: "rgba(139, 92, 246, 0.2)",
-    border: "1px solid #8b5cf6",
-    color: "#c084fc",
-    borderRadius: "6px",
-    fontSize: "11px",
-    fontWeight: "bold",
-    cursor: "pointer"
+    padding: "8px 14px",
+    backgroundColor: "#f59e0b",
+    border: "none",
+    color: "#020308",
+    borderRadius: "8px",
+    fontSize: "12px",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 2px 10px rgba(245, 158, 11, 0.4)",
+    marginTop: "6px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px"
   },
   speechBubble: { backgroundColor: "#03040b", border: "1px solid #1e293b", borderRadius: "8px", padding: "12px 14px" },
   copilotText: { 
@@ -715,36 +720,50 @@ function M1StepperControl({ equation, options, handleOptionClick, selectedOption
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
-  const startInterval = useCallback((action) => {
+  const isTouchHandledRef = useRef(false);
+
+  const startInterval = useCallback((action, isTouch = false) => {
     if (selectedOption !== null) return;
+    if (isTouch) {
+      isTouchHandledRef.current = true;
+    } else if (isTouchHandledRef.current) {
+      // Ignorar mouse synthetic event inmediatamente posterior a touchstart
+      return;
+    }
     stopInterval();
     action();
     
-    // DELAY CALIBRADO PARA MICRO-UX: 550ms para evitar doble salto involuntario
+    // DELAY CALIBRADO: 600ms para evitar saltos dobles involuntarios
     timeoutRef.current = setTimeout(() => {
       intervalRef.current = setInterval(() => {
         action();
-      }, 150); // INTERVALO DE RAMPA: 150ms para excelente precisión táctil
-    }, 550);
+      }, 180); // INTERVALO DE RAMPA
+    }, 600);
   }, [selectedOption, stopInterval]);
+
+  const stopIntervalAndResetTouch = useCallback(() => {
+    stopInterval();
+    setTimeout(() => {
+      isTouchHandledRef.current = false;
+    }, 400);
+  }, [stopInterval]);
 
   useEffect(() => {
     return () => stopInterval();
   }, [stopInterval]);
 
-  // Bloqueo estricto de disparos dobles por eventos de touch en híbridos
+  // Previene estrictamente incrementos dobles por touch + mousedown
   const bindHoldEvents = (action) => ({
     onMouseDown: (e) => {
-      if (e.button !== 0) return; // Solo click izquierdo
-      startInterval(action);
+      if (e.button !== 0) return;
+      startInterval(action, false);
     },
-    onMouseUp: stopInterval,
-    onMouseLeave: stopInterval,
+    onMouseUp: stopIntervalAndResetTouch,
+    onMouseLeave: stopIntervalAndResetTouch,
     onTouchStart: (e) => {
-      if (e.cancelable) e.preventDefault();
-      startInterval(action);
+      startInterval(action, true);
     },
-    onTouchEnd: stopInterval
+    onTouchEnd: stopIntervalAndResetTouch
   });
 
   useEffect(() => {
@@ -857,21 +876,23 @@ const m1Styles = {
   previewFraction: { fontSize: "36px", fontWeight: "bold", marginTop: "4px" },
   yellowNeonHelpBtn: {
     width: "100%",
-    padding: "12px",
-    backgroundColor: "#02040e",
-    border: "2px solid #fb923c",
-    color: "#fb923c",
-    borderRadius: "8px",
-    fontWeight: "bold",
+    padding: "14px 18px",
+    backgroundColor: "#f59e0b",
+    border: "2px solid #fbbf24",
+    color: "#020308",
+    borderRadius: "10px",
+    fontWeight: "900",
     fontSize: "15px",
+    letterSpacing: "0.5px",
     cursor: "pointer",
-    boxShadow: "0 0 12px rgba(251, 146, 60, 0.25)",
-    marginBottom: "14px",
+    boxShadow: "0 4px 16px rgba(245, 158, 11, 0.45)",
+    marginBottom: "16px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "8px",
-    transition: "all 0.2s ease"
+    gap: "10px",
+    transition: "all 0.15s ease",
+    textTransform: "uppercase"
   },
   confirmBtn: (disabled) => ({ width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: disabled ? "rgba(16, 185, 129, 0.2)" : "#10b981", color: disabled ? "#475569" : "#ffffff", border: "none", fontWeight: "bold", fontSize: "12px", letterSpacing: "1px", cursor: disabled ? "not-allowed" : "pointer" })
 };
@@ -891,18 +912,31 @@ function M2TurbineStepperControl({ equation, options, handleOptionClick, selecte
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
-  const startInterval = useCallback((action) => {
+  const isTouchHandledRef = useRef(false);
+
+  const startInterval = useCallback((action, isTouch = false) => {
     if (selectedOption !== null) return;
+    if (isTouch) {
+      isTouchHandledRef.current = true;
+    } else if (isTouchHandledRef.current) {
+      return;
+    }
     stopInterval();
     action();
     
-    // DELAY CALIBRADO: 550ms
     timeoutRef.current = setTimeout(() => {
       intervalRef.current = setInterval(() => {
         action();
-      }, 150); // INTERVALO DE RAMPA: 150ms
-    }, 550);
+      }, 180);
+    }, 600);
   }, [selectedOption, stopInterval]);
+
+  const stopIntervalAndResetTouch = useCallback(() => {
+    stopInterval();
+    setTimeout(() => {
+      isTouchHandledRef.current = false;
+    }, 400);
+  }, [stopInterval]);
 
   useEffect(() => {
     return () => stopInterval();
@@ -911,15 +945,14 @@ function M2TurbineStepperControl({ equation, options, handleOptionClick, selecte
   const bindHoldEvents = (action) => ({
     onMouseDown: (e) => {
       if (e.button !== 0) return;
-      startInterval(action);
+      startInterval(action, false);
     },
-    onMouseUp: stopInterval,
-    onMouseLeave: stopInterval,
+    onMouseUp: stopIntervalAndResetTouch,
+    onMouseLeave: stopIntervalAndResetTouch,
     onTouchStart: (e) => {
-      if (e.cancelable) e.preventDefault();
-      startInterval(action);
+      startInterval(action, true);
     },
-    onTouchEnd: stopInterval
+    onTouchEnd: stopIntervalAndResetTouch
   });
 
   useEffect(() => {
@@ -2951,9 +2984,9 @@ const styles = {
   dashboardTeacherControlsCard: { backgroundColor: "rgba(7, 12, 34, 0.75)", border: "2px solid #8b5cf6", borderRadius: "10px", padding: "16px", marginBottom: "20px", display: "flex", flexDirection: "column", gap: "10px" },
   teacherDashboardInput: { flex: 1, padding: "10px 14px", backgroundColor: "#02040e", border: "1px solid #334155", borderRadius: "6px", color: "#cbd5e1", fontSize: "13px" },
   teacherDashboardSendBtn: { backgroundColor: "#8b5cf6", color: "#ffffff", border: "none", padding: "10px 20px", borderRadius: "6px", fontWeight: "bold", fontSize: "12px", cursor: "pointer" },
-  dashboardGrid: { display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "20px" },
-  leftColumn: {},
-  rightColumn: {},
+  dashboardGrid: { display: "flex", flexDirection: "column", gap: "24px", width: "100%" },
+  leftColumn: { width: "100%", overflowX: "auto" },
+  rightColumn: { width: "100%" },
   dashboardCard: { backgroundColor: "rgba(7, 12, 34, 0.75)", borderRadius: "10px", padding: "16px", border: "1px solid #1e293b" },
   cardSectionTitle: { fontSize: "13px", margin: "0 0 12px 0", color: "#38bdf8", textTransform: "uppercase" },
   table: { width: "100%", borderCollapse: "collapse" },
