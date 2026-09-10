@@ -1,8 +1,23 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
+
 // ==========================================
-// 🛠️ MOTOR MATEMÁTICO PROCEDIMENTAL (M1 - M4)
+// 🧠 TRADUCTOR DE DESVÍOS DIDÁCTICOS (Español Pedagógico)
 // ==========================================
+const translateDesvio = (code) => {
+  if (code === "ERR_DIRECT") return "Suma Directa (Sin unificar base)";
+  if (code === "ERR_PARTIAL") return "Suma Incompleta (Un solo sumando)";
+  if (code === "ERR_LCD") return "Denominador Común Incorrecto";
+  if (code === "ERR_COMPARE") return "Comparación de Magnitudes sin Base";
+  return "Desvío General de Operación";
+};
+
+// ==========================================
+// 🛠️ MOCK BASE DE DATOS SEMILLA (8 Alumnos)
+// ==========================================
+const INITIAL_STUDENTS = [];
+
+// Helper para barajar aleatoriamente y reasignar letras en orden
 function prepareOptions(optionsList) {
   const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
   const copy = [...optionsList];
@@ -13,6 +28,9 @@ function prepareOptions(optionsList) {
   return copy.map((opt, idx) => ({ ...opt, id: letters[idx] || `${idx + 1}` }));
 }
 
+// ==========================================
+// 🛠️ MOTOR MATEMÁTICO PROCEDIMENTAL
+// ==========================================
 const MathGenerator = {
   generateM1() {
     const denoms = [5, 6, 7, 8, 9, 10, 12];
@@ -21,216 +39,292 @@ const MathGenerator = {
     const n2 = Math.floor(Math.random() * (D / 2 - 1)) + 1;
     const sumN = n1 + n2;
 
+    const narrative = `Dos sondas espaciales transmiten datos en la misma frecuencia orbital (${D}). La Sonda A envía ${n1}/${D} de la señal y la Sonda B aporta ${n2}/${D}. ¿Qué fracción total de la señal sintonizaste?`;
+
     const raw = [
-      { value: `${sumN}/${D}`, correct: true, feedback: `¡Señal sintonizada! Con igual canal orbital (${D}) sumamos numeradores: ${n1} + ${n2} = ${sumN}.` },
+      { value: `${sumN}/${D}`, correct: true, feedback: `¡Señal fijada! Con igual canal orbital (${D}) sumamos numeradores: ${n1} + ${n2} = ${sumN}.` },
       { value: `${sumN}/${D + D}`, correct: false, errorCode: "ERR_DIRECT", feedback: `Alerta: Sumaste denominadores (${D}+${D}=${D + D}). En el mismo canal, el denominador no cambia.` },
-      { value: `${n1}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la primera sonda. No olvides sumar la segunda.` },
-      { value: `${n2}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la segunda sonda. Falta la inicial.` },
-      { value: `${n1 * n2}/${D}`, correct: false, errorCode: "ERR_GENERIC", feedback: `Multiplicaste los numeradores en vez de sumarlos.` },
-      { value: `${sumN}/${D * 2 + 2}`, correct: false, errorCode: "ERR_GENERIC", feedback: `Frecuencia no coincidente con el canal orbital.` }
+      { value: `${n1}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la primera sonda (${n1}/${D}). Falta sumar la segunda (${n2}/${D}).` },
+      { value: `${n2}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la segunda sonda (${n2}/${D}). Falta sumar la inicial (${n1}/${D}).` }
     ];
 
-    return { equation: `${n1}/${D} + ${n2}/${D} = ?`, n1, n2, D, options: prepareOptions(raw) };
+    return { narrative, equation: `${n1}/${D} + ${n2}/${D} = ?`, n1, n2, D, options: prepareOptions(raw) };
   },
 
   generateM2() {
     const scenarios = [
-      { d1: 2, d2: 4, n1: 1, n2: 1, correct: "3/4", errDirect: "2/6", errLcd: "2/8", errPartial: "1/2", d1Val: "1/4", d2Val: "5/4", fb: "Denominador común 4: 1/2 equivale a 2/4. Sumando: 2/4 + 1/4 = 3/4." },
-      { d1: 3, d2: 6, n1: 1, n2: 1, correct: "3/6", errDirect: "2/9", errLcd: "2/18", errPartial: "1/3", d1Val: "1/6", d2Val: "4/6", fb: "Denominador común 6: 1/3 equivale a 2/6. Sumando: 2/6 + 1/6 = 3/6." },
-      { d1: 4, d2: 8, n1: 1, n2: 1, correct: "3/8", errDirect: "2/12", errLcd: "2/32", errPartial: "1/4", d1Val: "1/8", d2Val: "5/8", fb: "Denominador común 8: 1/4 equivale a 2/8. Sumando: 2/8 + 1/8 = 3/8." },
-      { d1: 5, d2: 10, n1: 1, n2: 1, correct: "3/10", errDirect: "2/15", errLcd: "2/50", errPartial: "1/5", d1Val: "1/10", d2Val: "4/10", fb: "Denominador común 10: 1/5 equivale a 2/10. Sumando: 2/10 + 1/10 = 3/10." },
-      { d1: 2, d2: 6, n1: 1, n2: 1, correct: "4/6", errDirect: "2/8", errLcd: "2/12", errPartial: "1/2", d1Val: "2/6", d2Val: "5/6", fb: "Denominador común 6: 1/2 equivale a 3/6. Sumando: 3/6 + 1/6 = 4/6." },
-      { d1: 3, d2: 9, n1: 2, n2: 1, correct: "7/9", errDirect: "3/12", errLcd: "3/27", errPartial: "2/3", d1Val: "4/9", d2Val: "5/9", fb: "Denominador común 9: 2/3 equivale a 6/9. Sumando: 6/9 + 1/9 = 7/9." }
+      { d1: 3, d2: 6, n1: 1, n2: 1, correct: "3/6", errDirect: "2/9", errLcd: "2/18", errPartial: "1/3", fb: "Denominador común 6: 1/3 equivale a 2/6. Sumando: 2/6 + 1/6 = 3/6." },
+      { d1: 2, d2: 4, n1: 1, n2: 1, correct: "3/4", errDirect: "2/6", errLcd: "2/8", errPartial: "1/2", fb: "Denominador común 4: 1/2 equivale a 2/4. Sumando: 2/4 + 1/4 = 3/4." },
+      { d1: 4, d2: 8, n1: 1, n2: 1, correct: "3/8", errDirect: "2/12", errLcd: "2/32", errPartial: "1/4", fb: "Denominador común 8: 1/4 equivale a 2/8. Sumando: 2/8 + 1/8 = 3/8." },
+      { d1: 5, d2: 10, n1: 1, n2: 1, correct: "3/10", errDirect: "2/15", errLcd: "2/50", errPartial: "1/5", fb: "Denominador común 10: 1/5 equivale a 2/10. Sumando: 2/10 + 1/10 = 3/10." },
+      { d1: 3, d2: 9, n1: 2, n2: 1, correct: "7/9", errDirect: "3/12", errLcd: "3/27", errPartial: "2/3", fb: "Denominador común 9: 2/3 equivale a 6/9. Sumando: 6/9 + 1/9 = 7/9." }
     ];
     const choice = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const narrative = `El tanque principal del propulsor contiene ${choice.n1}/${choice.d1} de combustible y el tanque auxiliar aporta ${choice.n2}/${choice.d2} más. ¿Qué fracción total de combustible lograste cargar?`;
+
     const raw = [
       { value: choice.correct, correct: true, feedback: `¡Válvula calibrada! ${choice.fb}` },
-      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `No sumes directamente denominadores (${choice.d1}+${choice.d2}). Buscá la base común.` },
-      { value: choice.errPartial, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el primer depósito. Te falta el auxiliar.` },
-      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Multiplicaste denominadores sin amplificar numeradores.` },
-      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el depósito auxiliar sin el principal.` },
-      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Flujo sobrecargado. Revisá la proporción con lápiz y papel.` }
+      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `No sumes directamente denominadores (${choice.d1}+${choice.d2}=${choice.d1+choice.d2}). Buscá la base común.` },
+      { value: choice.errPartial, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el primer tanque (${choice.n1}/${choice.d1}). Falta sumar el auxiliar.` },
+      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Multiplicaste denominadores sin amplificar adecuadamente los numeradores.` }
     ];
 
-    return { equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, d1: choice.d1, d2: choice.d2, options: prepareOptions(raw) };
+    return { narrative, equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, d1: choice.d1, d2: choice.d2, options: prepareOptions(raw) };
   },
 
   generateM3() {
     const scenarios = [
-      { d1: 3, d2: 6, n1: 1, n2: 1, displayCorrect: "1/2", errDirect: "2/9", errLcd: "2/18", d1Val: "1/3", d2Val: "4/6", d3Val: "2/3", fb: "1/3 + 1/6 = 3/6. Simplificado por 3 da la frecuencia pura de 1/2." },
-      { d1: 4, d2: 12, n1: 1, n2: 1, displayCorrect: "1/3", errDirect: "2/16", errLcd: "2/48", d1Val: "1/4", d2Val: "3/12", d3Val: "5/12", fb: "1/4 + 1/12 = 4/12. Simplificado por 4 da la frecuencia pura de 1/3." },
-      { d1: 6, d2: 10, n1: 1, n2: 1, displayCorrect: "4/15", errDirect: "2/16", errLcd: "2/60", d1Val: "1/6", d2Val: "1/10", d3Val: "7/30", fb: "MCM 30: 5/30 + 3/30 = 8/30, que simplificado es 4/15." },
-      { d1: 2, d2: 10, n1: 1, n2: 1, displayCorrect: "3/5", errDirect: "2/12", errLcd: "2/20", d1Val: "1/2", d2Val: "4/10", d3Val: "7/10", fb: "1/2 + 1/10 = 5/10 + 1/10 = 6/10, que simplificado por 2 da 3/5." },
-      { d1: 5, d2: 15, n1: 2, n2: 1, displayCorrect: "7/15", errDirect: "3/20", errLcd: "3/75", d1Val: "2/5", d2Val: "4/15", d3Val: "8/15", fb: "2/5 + 1/15 = 6/15 + 1/15 = 7/15 (fracción irreducible)." }
+      { d1: 3, d2: 4, n1: 1, n2: 1, displayCorrect: "7/12", errDirect: "2/7", errLcd: "1/12", fb: "MCM entre 3 y 4 es 12: 1/3 = 4/12 y 1/4 = 3/12. Sumados: 7/12." },
+      { d1: 2, d2: 5, n1: 1, n2: 2, displayCorrect: "9/10", errDirect: "3/7", errLcd: "2/10", fb: "MCM entre 2 y 5 es 10: 1/2 = 5/10 y 2/5 = 4/10. Sumados: 9/10." },
+      { d1: 3, d2: 5, n1: 1, n2: 1, displayCorrect: "8/15", errDirect: "2/8", errLcd: "1/15", fb: "MCM entre 3 y 5 es 15: 1/3 = 5/15 y 1/5 = 3/15. Sumados: 8/15." },
+      { d1: 4, d2: 5, n1: 1, n2: 1, displayCorrect: "9/20", errDirect: "2/9", errLcd: "1/20", fb: "MCM entre 4 y 5 es 20: 1/4 = 5/20 y 1/5 = 4/20. Sumados: 9/20." }
     ];
     const choice = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const narrative = `Dos módulos espaciales deben empalmar sus órbitas. El Módulo Alfa recorrió ${choice.n1}/${choice.d1} de la trayectoria y el Módulo Beta recorrió ${choice.n2}/${choice.d2}. ¿Qué fracción total cubrieron entre ambos?`;
+
     const raw = [
       { value: choice.displayCorrect, correct: true, feedback: `¡Órbitas enlazadas! ${choice.fb}` },
-      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `Sumar directo no sirve cuando las frecuencias orbitales difieren.` },
-      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Buscaste base común pero olvidaste amplificar numeradores.` },
-      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Falta enlazar la trayectoria del segundo módulo.` },
-      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Frecuencia distorsionada. Revisá la simplificación con lápiz y papel.` },
-      { value: choice.d3Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Desvío en el cálculo del mínimo común múltiplo.` }
+      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `Sumar numeradores y denominadores directo (${choice.d1}+${choice.d2}) no funciona cuando las bases difieren.` },
+      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Buscaste la base común pero cometiste un desvío al amplificar los numeradores.` },
+      { value: `${choice.n1}/${choice.d1}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo contabilizaste el Módulo Alfa (${choice.n1}/${choice.d1}).` }
     ];
 
-    return { equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, d1: choice.d1, d2: choice.d2, options: prepareOptions(raw) };
+    return { narrative, equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, d1: choice.d1, d2: choice.d2, options: prepareOptions(raw) };
   },
 
   generateM4() {
-    // 5 Variaciones de Soporte Vital y Reserva de Agua
     const variants = [
+      // Variación 1: Depósitos Octales (MCM = 8)
       {
-        theme: "Soporte Vital: Depósitos Octales de Agua",
+        title: "Soporte Vital: Depósitos Octales de Agua",
+        intro: "Tres tanques de reciclaje alimentan el sistema de agua potable de la cabina principal antes del despegue orbital.",
         steps: [
           {
-            title: "Paso 1: Mínimo Común Denominador de Tanques",
-            prompt: "Tres tanques de reciclaje alimentan el agua de la cabina: Tanque A aporta 1/2, Tanque B 1/4 y Tanque C 1/8. ¿Cuál es el mínimo común denominador entre 2, 4 y 8?",
+            prompt: "El Tanque A aporta 1/2, el Tanque B aporta 1/4 y el Tanque C aporta 1/8. ¿Cuál es el mínimo común denominador entre 2, 4 y 8?",
             rawOptions: [
-              { value: "8", correct: true, feedback: "¡Correcto! 8 es el menor múltiplo común entre 2, 4 y 8." },
-              { value: "16", correct: false, errorCode: "ERR_LCD", feedback: "16 es múltiplo pero no es el MÍNIMO común denominador." },
-              { value: "6", correct: false, errorCode: "ERR_LCD", feedback: "6 no es múltiplo de 4 ni de 8." },
-              { value: "4", correct: false, errorCode: "ERR_LCD", feedback: "4 no sirve para convertir octavos." }
+              { value: "8", correct: true, feedback: "¡Correcto! 8 es el menor múltiplo común de 2, 4 y 8." },
+              { value: "16", correct: false, errorCode: "ERR_LCD", feedback: "16 es múltiplo común, pero no es el mínimo." },
+              { value: "4", correct: false, errorCode: "ERR_LCD", feedback: "4 es múltiplo de 2 y 4, pero no de 8." },
+              { value: "6", correct: false, errorCode: "ERR_LCD", feedback: "6 no es múltiplo de 4 ni de 8." }
             ]
           },
           {
-            title: "Paso 2: Suma Total de Reservas",
-            prompt: "Convertí todos los tanques a octavos y sumalos: 1/2 + 1/4 + 1/8 = (4/8 + 2/8 + 1/8). ¿Cuál es la suma total?",
+            prompt: "Convertí los tres tanques a octavos y sumalos: 1/2 + 1/4 + 1/8 = ?",
             rawOptions: [
-              { value: "7/8", correct: true, feedback: "¡Excelente! 4/8 + 2/8 + 1/8 = 7/8 de reserva purificada." },
+              { value: "7/8", correct: true, feedback: "1/2 = 4/8, 1/4 = 2/8, 1/8 = 1/8. Sumados: 4/8 + 2/8 + 1/8 = 7/8." },
               { value: "3/14", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores linealmente (1+1+1 sobre 2+4+8)." },
-              { value: "6/8", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar el aporte de uno de los tanques." },
-              { value: "3/8", correct: false, errorCode: "ERR_LCD", feedback: "Olvidaste amplificar los numeradores al cambiar la base a octavos." }
+              { value: "6/8", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar el aporte del Tanque C (1/8)." },
+              { value: "5/8", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/2 a octavos (es 4/8, no 2/8)." }
             ]
           },
           {
-            title: "Paso 3: Evaluación de Margen para Caminata Espacial",
-            prompt: "El protocolo exige disponer de al menos 3/4 (6/8) de agua para autorizar la salida. Tenés 7/8 cargados. ¿Alcanza el suministro?",
+            prompt: "El protocolo de despegue exige contar con al menos 3/4 (6/8) de agua en la reserva. Tenés 7/8. ¿Alcanza la reserva?",
             rawOptions: [
-              { value: "Sí, alcanza y sobra 1/8 de margen", correct: true, feedback: "¡Correcto! 7/8 es mayor que 6/8 (3/4). Hay agua suficiente." },
-              { value: "No alcanza, falta agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Compará 7/8 contra 3/4 (convertido a 6/8)." },
-              { value: "Es exactamente igual", correct: false, errorCode: "ERR_COMPARE", feedback: "7/8 es strictly mayor a 6/8." },
-              { value: "No se puede determinar", correct: false, errorCode: "ERR_COMPARE", feedback: "Con el mismo denominador (8) se comparan directo los numeradores." }
-            ]
-          },
-          {
-            title: "Paso 4: Justificación Científica",
-            prompt: "¿Cómo justificás técnicamente la decisión de autorizar la caminata espacial?",
-            rawOptions: [
-              { value: "Convertí 3/4 a 6/8 y comprobé que la reserva acumulada de 7/8 supera el mínimo exigido.", correct: true, justificationType: "Master", feedback: "¡Justificación impecable de nivel Comandante!" },
-              { value: "A ojo en la pantalla se veía que el tanque estaba casi lleno.", correct: true, justificationType: "Intuitive", feedback: "Intuición correcta, pero recordá respaldar con cuentas." },
-              { value: "Resté 7 menos 6 y me dio 1, así que supuse que alcanzaba.", correct: false, justificationType: "Failed", errorCode: "ERR_DIRECT", feedback: "Operar números aislados sin contexto de fracción no es suficiente." }
+              { value: "Sí, alcanza y sobra 1/8 de reserva", correct: true, feedback: "7/8 es mayor que 3/4 (6/8). La reserva está asegurada con un margen de 1/8." },
+              { value: "No alcanza, falta 1/8 de agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 3/4 a octavos (6/8) y compará con 7/8." },
+              { value: "Es exactamente igual", correct: false, errorCode: "ERR_COMPARE", feedback: "No son iguales: 3/4 equivale a 6/8 y tenés 7/8." },
+              { value: "No se puede saber", correct: false, errorCode: "ERR_COMPARE", feedback: "Al convertir a un denominador común (octavos), la comparación es directa." }
             ]
           }
         ]
       },
+      // Variación 2: Reciclado de Hidroponia (MCM = 12)
       {
-        theme: "Soporte Vital: Reciclado de Hidroponia",
+        title: "Soporte Vital: Reciclado de Hidroponia",
+        intro: "El purificador recupera agua de tres sectores del invernadero espacial antes del ciclo de riego.",
         steps: [
           {
-            title: "Paso 1: Denominador Común del Invernadero",
-            prompt: "El purificador recupera agua de 3 sectores: Sector 1 (1/3), Sector 2 (1/6) y Sector 3 (5/12). ¿Cuál es el mínimo común denominador entre 3, 6 y 12?",
+            prompt: "El Sector 1 aporta 1/3, el Sector 2 aporta 1/6 y el Sector 3 aporta 5/12. ¿Cuál es el mínimo común denominador entre 3, 6 y 12?",
             rawOptions: [
-              { value: "12", correct: true, feedback: "¡Correcto! 12 es el MCM de 3, 6 y 12." },
-              { value: "24", correct: false, errorCode: "ERR_LCD", feedback: "24 es múltiplo pero no es el MÍNIMO." },
-              { value: "18", correct: false, errorCode: "ERR_LCD", feedback: "18 no es múltiplo de 12." },
-              { value: "6", correct: false, errorCode: "ERR_LCD", feedback: "6 no alcanza para convertir doceavos." }
+              { value: "12", correct: true, feedback: "¡Correcto! 12 es el mínimo común múltiplo entre 3, 6 y 12." },
+              { value: "24", correct: false, errorCode: "ERR_LCD", feedback: "24 funciona pero no es el mínimo común denominador." },
+              { value: "18", correct: false, errorCode: "ERR_LCD", feedback: "18 no es múltiplo de 4 ni divisible por 12." },
+              { value: "6", correct: false, errorCode: "ERR_LCD", feedback: "6 no puede contener al denominador 12." }
             ]
           },
           {
-            title: "Paso 2: Suma de Caudales Recuperados",
-            prompt: "Convertí a doceavos y sumá: 1/3 (4/12) + 1/6 (2/12) + 5/12. ¿Cuál es el total?",
+            prompt: "Convertí los tres sectores a doceavos y sumalos: 1/3 + 1/6 + 5/12 = ?",
             rawOptions: [
-              { value: "11/12", correct: true, feedback: "¡Muy bien! 4/12 + 2/12 + 5/12 = 11/12." },
-              { value: "7/21", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores en línea recta." },
-              { value: "9/12", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar uno de los sectores." },
-              { value: "7/12", correct: false, errorCode: "ERR_LCD", feedback: "Error al amplificar las fracciones a doceavos." }
+              { value: "11/12", correct: true, feedback: "1/3 = 4/12, 1/6 = 2/12, 5/12 = 5/12. Sumados: 4/12 + 2/12 + 5/12 = 11/12." },
+              { value: "7/21", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores de forma directa (1+1+5 sobre 3+6+12)." },
+              { value: "9/12", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/3 a doceavos (es 4/12, no 2/12)." },
+              { value: "6/12", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar la contribución del Sector 3 (5/12)." }
             ]
           },
           {
-            title: "Paso 3: Verificación de Nivel para Riego",
-            prompt: "Se requiere un mínimo de 5/6 (10/12) para habilitar el riego. Teniendo 11/12, ¿se autoriza?",
+            prompt: "El sistema requiere un piso de 5/6 (10/12) de capacidad para habilitar el circuito general. Tenés 11/12. ¿Se autoriza el riego?",
             rawOptions: [
-              { value: "Sí, se autoriza (11/12 supera el mínimo de 10/12)", correct: true, feedback: "¡Correcto! 11/12 > 10/12." },
-              { value: "No, no alcanza el agua", correct: false, errorCode: "ERR_COMPARE", feedback: "5/6 equivale a 10/12. 11/12 es superior." },
-              { value: "Falta la mitad del agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Solo falta 1/12 para el tanque lleno." },
-              { value: "Son equivalentes", correct: false, errorCode: "ERR_COMPARE", feedback: "11/12 es mayor que 10/12." }
-            ]
-          },
-          {
-            title: "Paso 4: Justificación Científica",
-            prompt: "¿Cuál es el sustento matemático de esta habilitación?",
-            rawOptions: [
-              { value: "Al pasar 5/6 a doceavos (10/12), se observa que 11/12 supera el requerimiento por 1/12.", correct: true, justificationType: "Master", feedback: "¡Argumentación lógica perfecta!" },
-              { value: "Calculé que 11 de 12 es casi todo el tanque.", correct: true, justificationType: "Intuitive", feedback: "Buena estimación intuitiva." },
-              { value: "Sumé 5 más 6 y dio 11.", correct: false, justificationType: "Failed", errorCode: "ERR_DIRECT", feedback: "Coincidencia numérica engañosa. Recordá comparar fracciones con base común." }
+              { value: "Sí, se autoriza (supera el mínimo por 1/12)", correct: true, feedback: "11/12 es mayor que 5/6 (10/12). El circuito tiene agua suficiente." },
+              { value: "No se autoriza, falta 1/12", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 5/6 a doceavos (10/12) y compará con 11/12." },
+              { value: "Es igual al mínimo requerido", correct: false, errorCode: "ERR_COMPARE", feedback: "5/6 es 10/12 y tenés 11/12, tenés 1/12 más." },
+              { value: "Falta la mitad del agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Compará los numeradores con el mismo denominador 12." }
             ]
           }
         ]
       },
+      // Variación 3: Condensadores de Emergencia (MCM = 10)
       {
-        theme: "Soporte Vital: Condensadores de Emergencia",
+        title: "Soporte Vital: Condensadores de Emergencia",
+        intro: "Tres filtros de condensación recogen la humedad ambiental para llenar el tanque de agua purificada.",
         steps: [
           {
-            title: "Paso 1: MCM de Condensación",
-            prompt: "Filtro A (2/5), Filtro B (1/2) y Filtro C (1/10). ¿MCM entre 5, 2 y 10?",
+            prompt: "El Filtro A aporta 2/5, el Filtro B aporta 1/2 y el Filtro C aporta 1/10. ¿Cuál es el mínimo común denominador entre 5, 2 y 10?",
             rawOptions: [
-              { value: "10", correct: true, feedback: "¡Correcto! 10 es el mínimo común múltiplo." },
-              { value: "20", correct: false, errorCode: "ERR_LCD", feedback: "20 es múltiplo pero no el mínimo." },
-              { value: "15", correct: false, errorCode: "ERR_LCD", feedback: "15 no es múltiplo de 2." },
-              { value: "5", correct: false, errorCode: "ERR_LCD", feedback: "5 no sirve para décimos." }
+              { value: "10", correct: true, feedback: "¡Exacto! 10 es el menor múltiplo de 5, 2 y 10." },
+              { value: "20", correct: false, errorCode: "ERR_LCD", feedback: "20 es múltiplo común, pero no el menor." },
+              { value: "15", correct: false, errorCode: "ERR_LCD", feedback: "15 es múltiplo de 5, pero no de 2 ni de 10." },
+              { value: "5", correct: false, errorCode: "ERR_LCD", feedback: "5 no puede contener al 10." }
             ]
           },
           {
-            title: "Paso 2: Condensación Total Acumulada",
-            prompt: "Suma en décimos: 2/5 (4/10) + 1/2 (5/10) + 1/10 = ?",
+            prompt: "Convertí las tres fracciones a décimos y sumalas: 2/5 + 1/2 + 1/10 = ?",
             rawOptions: [
-              { value: "10/10 (1 entero, Tanque Lleno)", correct: true, feedback: "¡Perfecto! 4/10 + 5/10 + 1/10 = 10/10." },
-              { value: "4/17", correct: false, errorCode: "ERR_DIRECT", feedback: "Suma directa prohibida." },
-              { value: "8/10", correct: false, errorCode: "ERR_PARTIAL", feedback: "Suma incompleta de los filtros." },
-              { value: "4/10", correct: false, errorCode: "ERR_LCD", feedback: "Olvidaste transformar las fracciones." }
+              { value: "10/10 (1 entero)", correct: true, feedback: "2/5 = 4/10, 1/2 = 5/10, 1/10 = 1/10. Sumados: 4/10 + 5/10 + 1/10 = 10/10 (tanque lleno)." },
+              { value: "4/17", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores directo (2+1+1 sobre 5+2+10)." },
+              { value: "8/10", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/2 a décimos (es 5/10, no 3/10)." },
+              { value: "9/10", correct: false, errorCode: "ERR_PARTIAL", feedback: "Omitiste sumar el aporte del Filtro C (1/10)." }
             ]
           },
           {
-            title: "Paso 3: Evaluación de Maniobra",
-            prompt: "Se requiere al menos 4/5 (8/10). Con 10/10 cargados, ¿hay suficiente agua?",
+            prompt: "Se necesita contar con al menos 4/5 (8/10) de reserva para la caminata espacial. Tenés 10/10. ¿Hay suficiente agua?",
             rawOptions: [
-              { value: "Sí, la capacidad está al 100% y supera el 4/5 requerido", correct: true, feedback: "¡Capacidad máxima alcanzada!" },
-              { value: "No alcanza", correct: false, errorCode: "ERR_COMPARE", feedback: "10/10 es el máximo posible." },
-              { value: "Falta un décimo", correct: false, errorCode: "ERR_COMPARE", feedback: "10/10 está completo." },
-              { value: "Indeterminado", correct: false, errorCode: "ERR_COMPARE", feedback: "10/10 > 8/10." }
+              { value: "Sí, la capacidad está al 100% y supera el 4/5 requerido", correct: true, feedback: "10/10 (1 entero) es mayor que 4/5 (8/10). Hay margen de sobra." },
+              { value: "No alcanza, falta 2/10", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 4/5 a décimos (8/10) y compará con 10/10." },
+              { value: "Es exactamente igual al mínimo", correct: false, errorCode: "ERR_COMPARE", feedback: "4/5 es 8/10, mientras que tenés 10/10." },
+              { value: "No se puede comparar", correct: false, errorCode: "ERR_COMPARE", feedback: "Con denominador común 10 se compara directamente." }
+            ]
+          }
+        ]
+      },
+      // Variación 4: Refrigeración del Reactor (Caso Deficitario, MCM = 12)
+      {
+        title: "Soporte Vital: Refrigeración del Reactor",
+        intro: "Tres depósitos inyectan refrigerante líquido al circuito de soporte vital del reactor.",
+        steps: [
+          {
+            prompt: "El Depósito 1 aporta 1/3, el Depósito 2 aporta 1/4 y el Depósito 3 aporta 1/6. ¿Cuál es el mínimo común denominador entre 3, 4 y 6?",
+            rawOptions: [
+              { value: "12", correct: true, feedback: "¡Correcto! 12 es el menor múltiplo de 3, 4 y 6." },
+              { value: "24", correct: false, errorCode: "ERR_LCD", feedback: "24 es múltiplo pero no es el mínimo." },
+              { value: "18", correct: false, errorCode: "ERR_LCD", feedback: "18 no es divisible por 4." },
+              { value: "36", correct: false, errorCode: "ERR_LCD", feedback: "36 es múltiplo pero muy alto." }
             ]
           },
           {
-            title: "Paso 4: Justificación",
-            prompt: "¿Cuál es el motivo técnico?",
+            prompt: "Convertí los tres depósitos a doceavos y sumalos: 1/3 + 1/4 + 1/6 = ?",
             rawOptions: [
-              { value: "Al tener 10/10 la reserva está completa (100%), superando el 80% (8/10) necesario.", correct: true, justificationType: "Master", feedback: "¡Excelente dominio!" },
-              { value: "Se nota porque no entra más agua en el tanque.", correct: true, justificationType: "Intuitive", feedback: "Cálculo práctico aceptado." },
-              { value: "Multipliqué 4 por 2 y dio 8.", correct: false, justificationType: "Failed", errorCode: "ERR_GENERIC", feedback: "Atención: la justificación debe respaldarse en la suma de fracciones." }
+              { value: "9/12 (o 3/4)", correct: true, feedback: "1/3 = 4/12, 1/4 = 3/12, 1/6 = 2/12. Sumados: 4/12 + 3/12 + 2/12 = 9/12." },
+              { value: "3/13", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores en línea recta (1+1+1 sobre 3+4+6)." },
+              { value: "7/12", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar el Depósito 3 (1/6 = 2/12)." },
+              { value: "8/12", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/3 a doceavos (es 4/12, no 3/12)." }
+            ]
+          },
+          {
+            prompt: "La computadora exige un nivel mínimo de 5/6 (10/12) para evitar el sobrecalentamiento. Tenés 9/12. ¿Alcanza la carga?",
+            rawOptions: [
+              { value: "No alcanza, falta 1/12 para llegar al nivel de seguridad", correct: true, feedback: "5/6 equivale a 10/12. Al tener 9/12, falta exactamente 1/12 para el mínimo de seguridad." },
+              { value: "Sí alcanza y sobra refrigerante", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 5/6 a doceavos (10/12) y compará con 9/12." },
+              { value: "Es exactamente igual al requerimiento", correct: false, errorCode: "ERR_COMPARE", feedback: "9/12 es menor que 10/12 (5/6)." },
+              { value: "Sobra la mitad del refrigerante", correct: false, errorCode: "ERR_COMPARE", feedback: "Analizá las fracciones en doceavos: 9/12 vs 10/12." }
+            ]
+          }
+        ]
+      },
+      // Variación 5: Módulo de Ensayos Biológicos (MCM = 20)
+      {
+        title: "Soporte Vital: Módulo de Ensayos Biológicos",
+        intro: "Se consolidan tres reservas de agua destilada para los laboratorios de cultivo de la base.",
+        steps: [
+          {
+            prompt: "La Reserva Alfa aporta 2/5, la Beta aporta 1/4 y la Gamma aporta 3/20. ¿Cuál es el mínimo común denominador entre 5, 4 y 20?",
+            rawOptions: [
+              { value: "20", correct: true, feedback: "¡Excelente! 20 es el MCM entre 5, 4 y 20." },
+              { value: "40", correct: false, errorCode: "ERR_LCD", feedback: "40 es múltiplo común, pero no el mínimo." },
+              { value: "10", correct: false, errorCode: "ERR_LCD", feedback: "10 no es múltiplo de 4." },
+              { value: "15", correct: false, errorCode: "ERR_LCD", feedback: "15 no es múltiplo de 4 ni de 20." }
+            ]
+          },
+          {
+            prompt: "Convertí las tres reservas a veintiavos y sumalas: 2/5 + 1/4 + 3/20 = ?",
+            rawOptions: [
+              { value: "16/20 (o 4/5)", correct: true, feedback: "2/5 = 8/20, 1/4 = 5/20, 3/20 = 3/20. Sumados: 8/20 + 5/20 + 3/20 = 16/20." },
+              { value: "6/29", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste directamente numeradores y denominadores (2+1+3 sobre 5+4+20)." },
+              { value: "13/20", correct: false, errorCode: "ERR_PARTIAL", feedback: "Omitiste sumar el aporte de la Reserva Gamma (3/20)." },
+              { value: "14/20", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 2/5 a veintiavos (es 8/20, no 6/20)." }
+            ]
+          },
+          {
+            prompt: "El laboratorio exige un piso de 7/10 (14/20) para habilitar los cultivos. Tenés 16/20. ¿Se pueden iniciar las pruebas?",
+            rawOptions: [
+              { value: "Sí, alcanza y queda una reserva de 2/20 (1/10)", correct: true, feedback: "16/20 es mayor que 7/10 (14/20). Hay suficiente agua destilada." },
+              { value: "No se puede, falta agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 7/10 a veintiavos (14/20) y compará con 16/20." },
+              { value: "Es exactamente igual al mínimo", correct: false, errorCode: "ERR_COMPARE", feedback: "16/20 supera a 14/20 por 2/20." },
+              { value: "No hay suficiente información", correct: false, errorCode: "ERR_COMPARE", feedback: "Comparando en veintiavos la solución es directa." }
             ]
           }
         ]
       }
     ];
 
-    const chosen = variants[Math.floor(Math.random() * variants.length)];
-    return chosen.steps.map((st) => ({
+    const chosenVariant = variants[Math.floor(Math.random() * variants.length)];
+    return chosenVariant.steps.map((st) => ({
       ...st,
+      title: chosenVariant.title,
+      intro: chosenVariant.intro,
       options: prepareOptions(st.rawOptions)
     }));
   }
 };
 
 const SYSTEM_EXPERT_ALERTS = {
-  ERR_DIRECT: "🛠️ Propuesta para el cuaderno: representar en tiras de papel por qué los denominadores no se suman.",
-  ERR_PARTIAL: "🍳 Consejo: usar elementos concretos en mesa para no olvidar ninguna parte de la suma.",
-  ERR_LCD: "🧩 Consejo: repasar las tablas de multiplicar de los denominadores para hallar la base común.",
-  ERR_COMPARE: "🥤 Consejo: convertir ambas fracciones al mismo denominador antes de comparar."
+  ERR_DIRECT: "🛠️ Propuesta aula: dinámica de doblado de tiras de papel para visualizar por qué el denominador nunca se suma.",
+  ERR_PARTIAL: "🍳 Actividad hogar: usen elementos divisibles en la mesa para representar la agregación de partes.",
+  ERR_LCD: "🧩 Actividad hogar: repasen juntos las tablas de multiplicar de los denominadores antes de operar.",
+  ERR_COMPARE: "🥤 Actividad hogar: sirvan agua en vasos de diferente diámetro para ilustrar la necesidad de una base común."
 };
 
 // ==========================================
-// 🔊 MÓDULO DE AUDIO (SINTETIZADOR WEB AUDIO)
+// 📚 FICHA PEDAGÓGICA POPUP (Para el docente)
 // ==========================================
+const MISSION_PEDAGOGICAL_INFO = {
+  m1: {
+    title: "Misión 1: Suministro de Agua de Emergencia",
+    curriculum: "Suma de fracciones de igual denominador (Racionales homogéneos).",
+    objective: "Evaluar si el alumno asimila que cuando las partes pertenecen a la misma base o tamaño de tanque, solo se agregan los numeradores, manteniendo el denominador común intacto.",
+    actions: "El alumno opera una consola de calibración táctil. Debe presionar los pulsadores [＋] y [－] para registrar las partes de agua en el Numerador en 3 y las divisiones del tanque en el Denominador en 5, manteniendo el denominador común intacto, y luego presionar '📊 REGISTRAR AGUA Y VERIFICAR' para confirmar."
+  },
+  m2: {
+    title: "Misión 2: Raciones de Alimento Seco",
+    curriculum: "Suma de fracciones con denominador múltiplo directo (sin simplificación).",
+    objective: "Analizar el paso intermedio de unificar denominadores mediante amplificación de una de las fracciones en un denominador común directo, sin requerir simplificación del resultado.",
+    actions: "El alumno opera una consola de calibración de alimentos. Debe presionar los pulsadores [＋] y [－] para amplificar la primera fracción de raciones y sumar el aporte de la segunda de forma unificada. Debe colocar las raciones totales en el Numerador y la base unificada en el Denominador al resultado exacto, y luego presionar '📊 REGISTRAR ALIMENTO Y VERIFICAR'."
+  },
+  m3: {
+    title: "Misión 3: Conexión de Red Eléctrica",
+    curriculum: "Suma de fracciones con denominadores heterogéneos y simplificación obligatoria.",
+    objective: "Evaluar la capacidad de encontrar el mínimo común múltiplo (mcm), amplificar numeradores correspondientes y realizar la posterior reducción del resultado a la fracción irreducible.",
+    actions: "El alumno opera un tablero con opciones predefinidas de red eléctrica. Debe calcular la suma de los consumos heterogéneos encontrando el mínimo común múltiplo (MCD) y reduciendo el resultado final a su fracción irreducible más pura antes de presionar '📊 REGISTRAR CONEXIÓN Y VERIFICAR'."
+  },
+  m4: {
+    title: "Misión 4: Gestión de Colonos (El Día 1)",
+    curriculum: "Integración de saberes, suma triple de fracciones, comparación de proporciones y justificación.",
+    objective: "Monitorear la articulación de todas las destrezas adquiridas para resolver un problema de administración de recursos del refugio en 4 pasos, requiriendo argumentar por escrito su deducción lógica.",
+    actions: "El alumno opera 4 palancas táctiles compactas para calibrar el despegue de recursos de supervivencia en 4 pasos progresivos: (1) Sintonizar una ración de agua de tres partes con igual denominador, (2) Sumar tres consumos heterogéneos para completar el contenedor entero (100%), (3) Calcular y comparar proporciones de tiempo de raciones restantes, y (4) Elegir la justificación matemática precisa que valide su razonamiento lógico."
+  }
+};
+
+// ==========================================
+// 🔊 MÓDULO DE AUDIO SINTETIZADO (Web Audio API)
+// ==========================================
+
+// Helper to get mission rules name dynamically
+const getMissionRulesName = (missionKey) => {
+  if (missionKey === "m1") return "Reglas de Suministro de Agua";
+  if (missionKey === "m2") return "Reglas de Almacenamiento de Alimentos";
+  if (missionKey === "m3") return "Reglas de Conexión de Red";
+  return "Reglas de Gestión del Refugio";
+};
+
 function useGameFeedback() {
   const audioCtxRef = useRef(null);
 
@@ -249,27 +343,25 @@ function useGameFeedback() {
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
       osc1.type = "sine";
-      osc1.frequency.setValueAtTime(523.25, t);
+      osc1.frequency.setValueAtTime(523.25, t); // C5
       gain1.gain.setValueAtTime(0.04, t);
       gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-      osc1.connect(gain1);
-      gain1.connect(ctx.destination);
-      osc1.start(t);
-      osc1.stop(t + 0.1);
+      osc1.connect(gain1); gain1.connect(ctx.destination);
+      osc1.start(t); osc1.stop(t + 0.1);
 
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = "sine";
-      osc2.frequency.setValueAtTime(659.25, t + 0.08);
+      osc2.frequency.setValueAtTime(659.25, t + 0.08); // E5
       gain2.gain.setValueAtTime(0.04, t + 0.08);
       gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.start(t + 0.08);
-      osc2.stop(t + 0.18);
-    } catch (e) {
-      console.warn(e);
-    }
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.start(t + 0.08); osc2.stop(t + 0.18);
+
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    } catch (e) { console.warn(e); }
   };
 
   const playError = () => {
@@ -279,16 +371,12 @@ function useGameFeedback() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(160, t);
+      osc.frequency.setValueAtTime(160, t); // Tono de atención neutro
       gain.gain.setValueAtTime(0.03, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.18);
-    } catch (e) {
-      console.warn(e);
-    }
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.18);
+    } catch (e) { console.warn(e); }
   };
 
   const playRobotChat = () => {
@@ -302,13 +390,9 @@ function useGameFeedback() {
       osc.frequency.exponentialRampToValueAtTime(880, t + 0.08);
       gain.gain.setValueAtTime(0.03, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.08);
-    } catch (e) {
-      console.warn(e);
-    }
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t); osc.stop(t + 0.08);
+    } catch (e) { console.warn(e); }
   };
 
   const playMissionDone = () => {
@@ -322,14 +406,13 @@ function useGameFeedback() {
         osc.frequency.setValueAtTime(freq, t + i * 0.1);
         gain.gain.setValueAtTime(0.04, t + i * 0.1);
         gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.25);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t + i * 0.1);
-        osc.stop(t + i * 0.1 + 0.25);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t + i * 0.1); osc.stop(t + i * 0.1 + 0.25);
       });
-    } catch (e) {
-      console.warn(e);
-    }
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate([100, 80, 100]);
+      }
+    } catch (e) { console.warn(e); }
   };
 
   const playBadge = () => {
@@ -343,14 +426,13 @@ function useGameFeedback() {
         osc.frequency.setValueAtTime(freq, t + i * 0.07);
         gain.gain.setValueAtTime(0.03, t + i * 0.07);
         gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.07 + 0.2);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t + i * 0.07);
-        osc.stop(t + i * 0.07 + 0.2);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t + i * 0.07); osc.stop(t + i * 0.07 + 0.2);
       });
-    } catch (e) {
-      console.warn(e);
-    }
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate([150, 100, 150, 100, 400]);
+      }
+    } catch (e) { console.warn(e); }
   };
 
   return { playCorrect, playError, playRobotChat, playMissionDone, playBadge };
@@ -412,7 +494,10 @@ function HyperspaceJump() {
 const hyperspaceStyles = {
   overlay: {
     position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "rgba(2, 3, 8, 0.75)",
     zIndex: 9000,
     overflow: "hidden",
@@ -436,9 +521,21 @@ const hyperspaceStyles = {
 };
 
 // ==========================================
-// 🤖 EDUBOT COPILOTO
+// 🤖 EDUBOT (COPILOTO ROBOT)
 // ==========================================
-function EduBotCopilot({ mood, message, onClickHelp, errorWarning }) {
+function EduBotCopilot({ mood, message, errorWarning }) {
+  const [isBlinking, setIsBlinking] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsBlinking(true);
+      setTimeout(() => {
+        setIsBlinking(false);
+      }, 400);
+    }, 20000); // Parpadeo cada 20 segundos
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div style={astroStyles.container}>
       <div style={astroStyles.header}>
@@ -448,20 +545,23 @@ function EduBotCopilot({ mood, message, onClickHelp, errorWarning }) {
           </div>
           <div style={astroStyles.head(mood)}>
             <div style={astroStyles.screen}>
-              {mood === "happy" && <span style={astroStyles.eyesHappy}>^ ‿ ^</span>}
-              {mood === "shocked" && <span style={astroStyles.eyesShock}>O ⍜ O</span>}
-              {mood === "thinking" && <span style={astroStyles.eyesThink}>o _ O</span>}
-              {mood === "idle" && <span style={astroStyles.eyesIdle}>• _ •</span>}
+              {isBlinking ? (
+                <span style={astroStyles.eyesIdle}>- _ -</span>
+              ) : (
+                <>
+                  {mood === "happy" && <span style={astroStyles.eyesHappy}>^ ‿ ^</span>}
+                  {mood === "shocked" && <span style={astroStyles.eyesShock}>O ⍜ O</span>}
+                  {mood === "thinking" && <span style={astroStyles.eyesThink}>o _ O</span>}
+                  {mood === "idle" && <span style={astroStyles.eyesIdle}>• _ •</span>}
+                </>
+              )}
             </div>
           </div>
         </div>
 
         <div style={astroStyles.titleBlock}>
           <div style={astroStyles.copilotName}>🤖 EDUBOT (Copiloto)</div>
-          <div style={astroStyles.copilotSub}>IA de Asistencia a Bordo</div>
-          <button onClick={onClickHelp} style={astroStyles.hintBtn} type="button">
-            💡 Pedir pista a EduBot
-          </button>
+          <div style={astroStyles.copilotSub}>Asistencia de Cabina en Vivo</div>
         </div>
       </div>
 
@@ -471,9 +571,9 @@ function EduBotCopilot({ mood, message, onClickHelp, errorWarning }) {
 
       {errorWarning && (
         <div style={astroStyles.errorAlertBox}>
-          <span style={{ fontSize: "22px" }}>📝⚠️</span>
-          <div style={{ fontSize: "12px", color: "#fca5a5", lineHeight: "1.4", fontFamily: "monospace" }}>
-            <strong style={{ color: "#ffffff" }}>¡ALERTA DE EDUBOT!</strong><br />
+          <span style={{ fontSize: "26px" }}>📝⚠️</span>
+          <div style={{ fontSize: "14px", color: "#fca5a5", lineHeight: "1.5", fontFamily: "monospace" }}>
+            <strong style={{ color: "#ffffff" }}>¡RECOMENDACIÓN DE CABINA!</strong><br />
             {errorWarning}
           </div>
         </div>
@@ -536,18 +636,16 @@ const astroStyles = {
   titleBlock: { flex: 1 },
   copilotName: { fontSize: "14px", fontWeight: "900", color: "#c084fc", letterSpacing: "1px" },
   copilotSub: { fontSize: "11px", color: "#94a3b8", marginBottom: "6px" },
-  hintBtn: {
-    padding: "6px 12px",
-    backgroundColor: "rgba(139, 92, 246, 0.2)",
-    border: "1px solid #8b5cf6",
-    color: "#c084fc",
-    borderRadius: "6px",
-    fontSize: "11px",
-    fontWeight: "bold",
-    cursor: "pointer"
-  },
+  hintBtn: { padding: "6px 12px", backgroundColor: "rgba(139, 92, 246, 0.15)", border: "1px solid #8b5cf6", color: "#c084fc", borderRadius: "6px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" },
   speechBubble: { backgroundColor: "#03040b", border: "1px solid #1e293b", borderRadius: "8px", padding: "12px 14px" },
-  copilotText: { fontSize: "13px", fontWeight: "bold", color: "#ffffff", lineHeight: "1.5", fontFamily: "'Segoe UI', Roboto, sans-serif" },
+  copilotText: { 
+    fontSize: "15px", 
+    fontWeight: "500", 
+    color: "#cbd5e1", 
+    lineHeight: "1.7", 
+    letterSpacing: "0.6px", // Letras separadas y legibles
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+  },
   errorAlertBox: {
     backgroundColor: "rgba(239, 68, 68, 0.15)",
     border: "2px solid #ef4444",
@@ -555,54 +653,77 @@ const astroStyles = {
     padding: "12px",
     display: "flex",
     alignItems: "center",
-    gap: "10px"
+    gap: "10px",
+    animation: "pulseWarning 1.5s infinite"
   }
 };
 
 // ==========================================
-// 🛰️ CONTROL M1: STEPPERS TÁCTILES
+// 🛰️ CONTROL M1: STEPPERS TÁCTILES CALIBRADOS (Tu Fracción Seleccionada)
 // ==========================================
 function M1StepperControl({ equation, options, handleOptionClick, selectedOption }) {
   const [num, setNum] = useState(1);
   const [den, setDen] = useState(1);
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
+  const [warningMsg, setWarningMsg] = useState(null);
 
   const stopInterval = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
-  const startInterval = useCallback((action) => {
+  const isTouchHandledRef = useRef(false);
+
+  const startInterval = useCallback((action, isTouch = false) => {
     if (selectedOption !== null) return;
+    if (isTouch) {
+      isTouchHandledRef.current = true;
+    } else if (isTouchHandledRef.current) {
+      // Ignorar mouse synthetic event inmediatamente posterior a touchstart
+      return;
+    }
     stopInterval();
     action();
+    
+    // DELAY CALIBRADO: 600ms para evitar saltos dobles involuntarios
     timeoutRef.current = setTimeout(() => {
       intervalRef.current = setInterval(() => {
         action();
-      }, 100);
-    }, 350);
+      }, 180); // INTERVALO DE RAMPA
+    }, 600);
   }, [selectedOption, stopInterval]);
+
+  const stopIntervalAndResetTouch = useCallback(() => {
+    stopInterval();
+    setTimeout(() => {
+      isTouchHandledRef.current = false;
+    }, 400);
+  }, [stopInterval]);
 
   useEffect(() => {
     return () => stopInterval();
   }, [stopInterval]);
 
+  // Previene estrictamente incrementos dobles por touch + mousedown
   const bindHoldEvents = (action) => ({
-    onMouseDown: () => startInterval(action),
-    onMouseUp: stopInterval,
-    onMouseLeave: stopInterval,
-    onTouchStart: (e) => {
-      e.preventDefault();
-      startInterval(action);
+    onMouseDown: (e) => {
+      if (e.button !== 0) return;
+      startInterval(action, false);
     },
-    onTouchEnd: stopInterval
+    onMouseUp: stopIntervalAndResetTouch,
+    onMouseLeave: stopIntervalAndResetTouch,
+    onTouchStart: (e) => {
+      startInterval(action, true);
+    },
+    onTouchEnd: stopIntervalAndResetTouch
   });
 
   useEffect(() => {
     if (selectedOption === null) {
       setNum(1);
       setDen(1);
+      setWarningMsg(null);
     }
   }, [equation, selectedOption]);
 
@@ -619,19 +740,23 @@ function M1StepperControl({ equation, options, handleOptionClick, selectedOption
 
   const handleConfirm = () => {
     if (selectedOption !== null) return;
+    
+    // Advertencia no punitiva si intentan enviar estando 1/1
     if (num === 1 && den === 1) {
-      handleOptionClick({ id: "W_WARN", correct: false, feedback: "Debes colocar el número correspondiente apretando ＋ y － para sintonizar." });
+      setWarningMsg("Debes colocar el número correspondiente apretando ＋ y － para sintonizar.");
+      setTimeout(() => setWarningMsg(null), 5000);
       return;
     }
 
     const selectedFractionText = `${num}/${den}`;
-    const matchingOption = options.find((opt) => opt.value.startsWith(selectedFractionText));
+    const matchingOption = options.find((opt) => opt.value === selectedFractionText);
 
     if (matchingOption) {
       handleOptionClick(matchingOption);
     } else {
       let code = "ERR_GENERIC";
       let msg = `La señal (${num}/${den}) es inestable. Sintonizá la suma correcta sobre la base orbital.`;
+      
       if (den === D + D) {
         code = "ERR_DIRECT";
         msg = `Alerta: Suma Directa (${num}/${den}). Los denominadores no se suman.`;
@@ -647,41 +772,44 @@ function M1StepperControl({ equation, options, handleOptionClick, selectedOption
   return (
     <div style={m1Styles.container}>
       <div style={m1Styles.refBox}>
-        <span style={m1Styles.refLabel}>📡 Canal Sonda A: <strong style={{ color: "#38bdf8" }}>{n1}/{D}</strong></span>
-        <span style={m1Styles.refLabel}>🛸 Canal Sonda B: <strong style={{ color: "#c084fc" }}>{n2}/{D}</strong></span>
+        <span style={m1Styles.refLabel}>📡 Primera Fracción: <strong style={{ color: "#38bdf8" }}>{n1}/{D}</strong></span>
+        <span style={m1Styles.refLabel}>🛸 Segunda Fracción: <strong style={{ color: "#c084fc" }}>{n2}/{D}</strong></span>
       </div>
 
       <div style={m1Styles.controlGrid}>
         <div style={m1Styles.stepperBox}>
-          <div style={m1Styles.boxTitle}>AMPLITUD DE ONDA (Numerador)</div>
+          <div style={m1Styles.boxTitle}>PARTES SELECCIONADAS (Numerador)</div>
           <div style={m1Styles.ledDisplay}>{num}</div>
           <div style={m1Styles.buttonRow}>
             <button {...bindHoldEvents(() => setNum((p) => (p > 1 ? p - 1 : 1)))} disabled={selectedOption !== null} style={m1Styles.stepBtn} type="button">－</button>
-            <button {...bindHoldEvents(() => setNum((p) => (p < 30 ? p + 1 : 30)))} disabled={selectedOption !== null} style={m1Styles.stepBtn} type="button">＋</button>
+            <button {...bindHoldEvents(() => setNum((p) => (p < 20 ? p + 1 : 20)))} disabled={selectedOption !== null} style={m1Styles.stepBtn} type="button">＋</button>
           </div>
         </div>
 
         <div style={m1Styles.stepperBox}>
-          <div style={m1Styles.boxTitle}>CANAL DE ÓRBITA (Denominador)</div>
+          <div style={m1Styles.boxTitle}>DIVISIONES DE LA UNIDAD (Denominador)</div>
           <div style={m1Styles.ledDisplay}>{den}</div>
           <div style={m1Styles.buttonRow}>
             <button {...bindHoldEvents(() => setDen((p) => (p > 1 ? p - 1 : 1)))} disabled={selectedOption !== null} style={m1Styles.stepBtn} type="button">－</button>
-            <button {...bindHoldEvents(() => setDen((p) => (p < 30 ? p + 1 : 30)))} disabled={selectedOption !== null} style={m1Styles.stepBtn} type="button">＋</button>
+            <button {...bindHoldEvents(() => setDen((p) => (p < 20 ? p + 1 : 20)))} disabled={selectedOption !== null} style={m1Styles.stepBtn} type="button">＋</button>
           </div>
         </div>
       </div>
 
       <div style={m1Styles.previewScreen}>
-        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Frecuencia Sintonizada</div>
+        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Tu Fracción Seleccionada</div>
         <div style={m1Styles.previewFraction}>
           <span style={{ color: "#38bdf8" }}>{num}</span>
           <span style={{ color: "#334155", margin: "0 12px" }}>/</span>
           <span style={{ color: "#c084fc" }}>{den}</span>
         </div>
+        {warningMsg && (
+          <p style={{ fontSize: "11px", color: "#fb923c", fontWeight: "bold", margin: "8px 0 0 0" }}>⚠️ {warningMsg}</p>
+        )}
       </div>
 
       <button onClick={handleConfirm} disabled={selectedOption !== null} style={m1Styles.confirmBtn(selectedOption !== null)} type="button">
-        🛰️ SINTONIZAR FRECUENCIA Y TRANSMITIR
+        📊 CONFIRMAR FRACCIÓN Y PROBAR
       </button>
     </div>
   );
@@ -698,46 +826,186 @@ const m1Styles = {
   buttonRow: { display: "flex", gap: "15px" },
   stepBtn: { width: "38px", height: "38px", borderRadius: "50%", border: "1px solid #38bdf8", backgroundColor: "rgba(56, 189, 248, 0.08)", color: "#38bdf8", fontSize: "20px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
   previewScreen: { backgroundColor: "#02040e", border: "1px solid #111827", borderRadius: "8px", padding: "12px", textAlign: "center", marginBottom: "15px" },
-  previewFraction: { fontSize: "30px", fontWeight: "bold", marginTop: "4px" },
+  previewFraction: { fontSize: "36px", fontWeight: "bold", marginTop: "4px" },
+  yellowNeonHelpBtn: {
+    width: "100%",
+    padding: "14px 18px",
+    backgroundColor: "#f59e0b",
+    border: "2px solid #fbbf24",
+    color: "#020308",
+    borderRadius: "10px",
+    fontWeight: "900",
+    fontSize: "15px",
+    letterSpacing: "0.5px",
+    cursor: "pointer",
+    boxShadow: "0 4px 16px rgba(245, 158, 11, 0.45)",
+    marginBottom: "16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+    transition: "all 0.15s ease",
+    textTransform: "uppercase"
+  },
   confirmBtn: (disabled) => ({ width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: disabled ? "rgba(16, 185, 129, 0.2)" : "#10b981", color: disabled ? "#475569" : "#ffffff", border: "none", fontWeight: "bold", fontSize: "12px", letterSpacing: "1px", cursor: disabled ? "not-allowed" : "pointer" })
 };
 
 // ==========================================
-// 🚀 CONTROL M2: BOTONES REDONDOS DE TURBINA
+// 📦 CONTROL M2: SEGUNDA CAPA DE STEPPERS CALIBRADOS (Almacenamiento de Alimentos)
 // ==========================================
-function M2TurbineControl({ options, handleOptionClick, selectedOption }) {
-  const [selectedFrac, setSelectedFrac] = useState(null);
+function M2TurbineStepperControl({ equation, options, handleOptionClick, selectedOption }) {
+  const [num, setNum] = useState(1);
+  const [den, setDen] = useState(1);
+  const timeoutRef = useRef(null);
+  const intervalRef = useRef(null);
+  const [warningMsg, setWarningMsg] = useState(null);
+
+  const stopInterval = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  }, []);
+
+  const isTouchHandledRef = useRef(false);
+
+  const startInterval = useCallback((action, isTouch = false) => {
+    if (selectedOption !== null) return;
+    if (isTouch) {
+      isTouchHandledRef.current = true;
+    } else if (isTouchHandledRef.current) {
+      return;
+    }
+    stopInterval();
+    action();
+    
+    timeoutRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(() => {
+        action();
+      }, 180);
+    }, 600);
+  }, [selectedOption, stopInterval]);
+
+  const stopIntervalAndResetTouch = useCallback(() => {
+    stopInterval();
+    setTimeout(() => {
+      isTouchHandledRef.current = false;
+    }, 400);
+  }, [stopInterval]);
 
   useEffect(() => {
-    if (selectedOption === null) setSelectedFrac(null);
-  }, [selectedOption]);
+    return () => stopInterval();
+  }, [stopInterval]);
+
+  const bindHoldEvents = (action) => ({
+    onMouseDown: (e) => {
+      if (e.button !== 0) return;
+      startInterval(action, false);
+    },
+    onMouseUp: stopIntervalAndResetTouch,
+    onMouseLeave: stopIntervalAndResetTouch,
+    onTouchStart: (e) => {
+      startInterval(action, true);
+    },
+    onTouchEnd: stopIntervalAndResetTouch
+  });
+
+  useEffect(() => {
+    if (selectedOption === null) {
+      setNum(1);
+      setDen(1);
+      setWarningMsg(null);
+    }
+  }, [equation, selectedOption]);
+
+  const parseEquation = (eq) => {
+    if (!eq) return { n1: 1, d1: 4, n2: 1, d2: 8 };
+    const match = eq.match(/(\d+)\/(\d+)\s*\+\s*(\d+)\/(\d+)/);
+    if (match) {
+      return {
+        n1: parseInt(match[1], 10),
+        d1: parseInt(match[2], 10),
+        n2: parseInt(match[3], 10),
+        d2: parseInt(match[4], 10)
+      };
+    }
+    return { n1: 1, d1: 4, n2: 1, d2: 8 };
+  };
+
+  const { n1, d1, n2, d2 } = parseEquation(equation);
 
   const handleConfirm = () => {
-    if (!selectedFrac || selectedOption !== null) return;
-    const matched = options.find((opt) => opt.value === selectedFrac);
-    if (matched) handleOptionClick(matched);
+    if (selectedOption !== null) return;
+    
+    if (num === 1 && den === 1) {
+      setWarningMsg("Debes colocar el número correspondiente apretando ＋ y － para registrar el alimento.");
+      setTimeout(() => setWarningMsg(null), 5000);
+      return;
+    }
+
+    const selectedFractionText = `${num}/${den}`;
+    const matchingOption = options.find((opt) => opt.value === selectedFractionText);
+
+    if (matchingOption) {
+      handleOptionClick(matchingOption);
+    } else {
+      let code = "ERR_GENERIC";
+      let msg = `Almacenamiento errático (${num}/${den}). Registrá el total unificado de raciones secas.`;
+      
+      if (den === d1 + d2) {
+        code = "ERR_DIRECT";
+        msg = `Alerta: Suma Directa (${num}/${den}). Los tamaños de las cajas no se suman linealmente.`;
+      } else if (num === n1 || num === n2) {
+        code = "ERR_PARTIAL";
+        msg = `Alerta: Suma Incompleta. Solo inyectaste combustible de uno de los depósitos.`;
+      } else if (den === d1 * d2 && num === n1 + n2) {
+        code = "ERR_LCD";
+        msg = `Alerta: MCD Distorsionado. Multiplicaste los tanques sin amplificar numeradores.`;
+      }
+
+      handleOptionClick({ id: "W", value: selectedFractionText, correct: false, errorCode: code, feedback: msg });
+    }
   };
 
   return (
     <div style={m2Styles.container}>
-      <p style={m2Styles.title}>🧪 SELECCIONA EL NÚCLEO DE INYECCIÓN DE LA TURBINA:</p>
-      <div style={m2Styles.turbinesGrid}>
-        {options.map((opt) => {
-          const isCurrent = selectedFrac === opt.value;
-          return (
-            <div key={opt.id} onClick={() => selectedOption === null && setSelectedFrac(opt.value)} style={m2Styles.turbineRing(isCurrent, selectedOption !== null)}>
-              <div style={m2Styles.turbineCore(isCurrent)}>
-                <div style={m2Styles.coreLed(isCurrent)} />
-                <span style={m2Styles.turbineText(isCurrent)}>{opt.value}</span>
-                <span style={m2Styles.turbineLetter}>VALV-{opt.id}</span>
-              </div>
-            </div>
-          );
-        })}
+      <div style={m2Styles.refBox}>
+        <span style={m2Styles.refLabel}>⛽ Primera Fracción: <strong style={{ color: "#38bdf8" }}>{n1}/{d1}</strong></span>
+        <span style={m2Styles.refLabel}>⛽ Segunda Fracción (Auxiliar): <strong style={{ color: "#fb923c" }}>{n2}/{d2}</strong></span>
       </div>
 
-      <button onClick={handleConfirm} disabled={!selectedFrac || selectedOption !== null} style={m2Styles.ignitionBtn(!selectedFrac || selectedOption !== null)} type="button">
-        🔥 INICIAR IGNICIÓN Y SELLAR NÚCLEO
+      <div style={m2Styles.controlGrid}>
+        <div style={m2Styles.stepperBox}>
+          <div style={m2Styles.boxTitle}>TOTAL DE PARTES (Numerador)</div>
+          <div style={m2Styles.ledDisplay}>{num}</div>
+          <div style={m2Styles.buttonRow}>
+            <button {...bindHoldEvents(() => setNum((p) => (p > 1 ? p - 1 : 1)))} disabled={selectedOption !== null} style={m2Styles.stepBtn} type="button">－</button>
+            <button {...bindHoldEvents(() => setNum((p) => (p < 20 ? p + 1 : 20)))} disabled={selectedOption !== null} style={m2Styles.stepBtn} type="button">＋</button>
+          </div>
+        </div>
+
+        <div style={m2Styles.stepperBox}>
+          <div style={m2Styles.boxTitle}>DENOMINADOR COMÚN (En cuántas partes cortamos)</div>
+          <div style={m2Styles.ledDisplay}>{den}</div>
+          <div style={m2Styles.buttonRow}>
+            <button {...bindHoldEvents(() => setDen((p) => (p > 1 ? p - 1 : 1)))} disabled={selectedOption !== null} style={m2Styles.stepBtn} type="button">－</button>
+            <button {...bindHoldEvents(() => setDen((p) => (p < 20 ? p + 1 : 20)))} disabled={selectedOption !== null} style={m2Styles.stepBtn} type="button">＋</button>
+          </div>
+        </div>
+      </div>
+
+      <div style={m2Styles.previewScreen}>
+        <div style={{ fontSize: "10px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>Tu Fracción Seleccionada</div>
+        <div style={m2Styles.previewFraction}>
+          <span style={{ color: "#38bdf8" }}>{num}</span>
+          <span style={{ color: "#334155", margin: "0 12px" }}>/</span>
+          <span style={{ color: "#fb923c" }}>{den}</span>
+        </div>
+        {warningMsg && (
+          <p style={{ fontSize: "11px", color: "#fb923c", fontWeight: "bold", margin: "8px 0 0 0" }}>⚠️ {warningMsg}</p>
+        )}
+      </div>
+
+      <button onClick={handleConfirm} disabled={selectedOption !== null} style={m2Styles.ignitionBtn(selectedOption !== null)} type="button">
+        📊 CONFIRMAR Y PROBAR FRACCIÓN
       </button>
     </div>
   );
@@ -745,30 +1013,21 @@ function M2TurbineControl({ options, handleOptionClick, selectedOption }) {
 
 const m2Styles = {
   container: { backgroundColor: "rgba(5, 9, 28, 0.8)", border: "2px solid #334155", borderRadius: "14px", padding: "16px", marginTop: "10px" },
-  title: { fontSize: "11px", color: "#94a3b8", fontWeight: "900", margin: "0 0 14px 0", letterSpacing: "0.5px" },
-  turbinesGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "16px" },
-  turbineRing: (active, disabled) => ({
-    width: "100%", aspectRatio: "1/1", borderRadius: "50%",
-    backgroundColor: active ? "rgba(56, 189, 248, 0.25)" : "#02040e",
-    border: `3px solid ${active ? "#38bdf8" : "#1e293b"}`,
-    boxShadow: active ? "0 0 20px rgba(56, 189, 248, 0.6), inset 0 0 12px rgba(56, 189, 248, 0.5)" : "inset 0 0 10px rgba(0,0,0,0.8)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    cursor: disabled ? "not-allowed" : "pointer"
-  }),
-  turbineCore: (active) => ({
-    width: "78%", height: "78%", borderRadius: "50%",
-    backgroundColor: active ? "#061a33" : "#0d1326",
-    border: `2px solid ${active ? "#38bdf8" : "#334155"}`,
-    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
-  }),
-  coreLed: (active) => ({ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: active ? "#38bdf8" : "#475569", marginBottom: "4px" }),
-  turbineText: (active) => ({ fontSize: "18px", fontWeight: "900", color: active ? "#38bdf8" : "#ffffff", fontFamily: "'Courier New', monospace" }),
-  turbineLetter: { fontSize: "9px", fontWeight: "bold", color: "#64748b", marginTop: "2px" },
-  ignitionBtn: (disabled) => ({ width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: disabled ? "rgba(251, 146, 60, 0.2)" : "#fb923c", color: disabled ? "#64748b" : "#020308", border: "none", fontWeight: "bold", fontSize: "12px", cursor: disabled ? "not-allowed" : "pointer" })
+  refBox: { display: "flex", justifyContent: "space-around", backgroundColor: "#02040e", padding: "10px", borderRadius: "8px", border: "1px solid #111827", marginBottom: "15px" },
+  refLabel: { fontSize: "12px", fontWeight: "bold", color: "#94a3b8" },
+  controlGrid: { display: "flex", justifyContent: "center", gap: "20px", marginBottom: "15px", width: "100%" },
+  stepperBox: { backgroundColor: "#0c0f24", border: "1px solid #334155", borderRadius: "10px", padding: "15px", display: "flex", flexDirection: "column", alignItems: "center", flex: 1, maxWidth: "180px" },
+  boxTitle: { fontSize: "9px", fontWeight: "bold", color: "#64748b", letterSpacing: "0.5px", marginBottom: "10px", textAlign: "center" },
+  ledDisplay: { fontSize: "32px", fontFamily: "monospace", fontWeight: "bold", color: "#fb923c", backgroundColor: "#02040e", width: "70px", height: "45px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "6px", border: "1px solid #334155", marginBottom: "12px" },
+  buttonRow: { display: "flex", gap: "15px" },
+  stepBtn: { width: "38px", height: "38px", borderRadius: "50%", border: "1px solid #fb923c", backgroundColor: "rgba(251, 146, 60, 0.08)", color: "#fb923c", fontSize: "20px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
+  previewScreen: { backgroundColor: "#02040e", border: "1px solid #111827", borderRadius: "8px", padding: "12px", textAlign: "center", marginBottom: "15px" },
+  previewFraction: { fontSize: "36px", fontWeight: "bold", marginTop: "4px" },
+  ignitionBtn: (disabled) => ({ width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: disabled ? "rgba(251, 146, 60, 0.2)" : "#fb923c", color: disabled ? "#64748b" : "#020308", border: "none", fontWeight: "bold", fontSize: "12px", letterSpacing: "1px", cursor: disabled ? "not-allowed" : "pointer", boxShadow: disabled ? "none" : "0 0 15px rgba(251, 146, 60, 0.4)" })
 };
 
 // ==========================================
-// 🛸 CONTROL M3: CONSOLA DE ACOPLE (2×3)
+// 🛸 CONTROL M3: CONSOLA DE ACOPLE NO LINEAL (2×3)
 // ==========================================
 function M3OrbitalConsole({ options, handleOptionClick, selectedOption }) {
   const [activeId, setActiveId] = useState(null);
@@ -785,16 +1044,20 @@ function M3OrbitalConsole({ options, handleOptionClick, selectedOption }) {
 
   return (
     <div style={m3MatrixStyles.container}>
-      <p style={m3MatrixStyles.title}>🛸 CONSOLA DE ACOPLE: SELECCIONA EL MÓDULO DE FRECUENCIA</p>
+      <p style={m3MatrixStyles.title}>🛸 ELEGÍ EL RESULTADO CORRECTO DE LA OPERACIÓN:</p>
       <div style={m3MatrixStyles.grid2x3}>
         {options.map((opt) => {
           const isSelected = activeId === opt.id;
           return (
-            <div key={opt.id} onClick={() => selectedOption === null && setActiveId(opt.id)} style={m3MatrixStyles.podCard(isSelected, selectedOption !== null)}>
+            <div
+              key={opt.id}
+              onClick={() => selectedOption === null && setActiveId(opt.id)}
+              style={m3MatrixStyles.podCard(isSelected, selectedOption !== null)}
+            >
               <div style={m3MatrixStyles.podHeader}>
                 <span style={m3MatrixStyles.podBadge(isSelected)}>{opt.id}</span>
                 <div style={m3MatrixStyles.lockPin(isSelected)}>
-                  {isSelected ? "● ACOPLADO" : "○ LIBRE"}
+                  {isSelected ? "● SELECCIONADO" : "○ DISPONIBLE"}
                 </div>
               </div>
               <div style={m3MatrixStyles.freqVal(isSelected)}>
@@ -804,33 +1067,32 @@ function M3OrbitalConsole({ options, handleOptionClick, selectedOption }) {
           );
         })}
       </div>
-
-      <button onClick={handleConfirm} disabled={!activeId || selectedOption !== null} style={m3MatrixStyles.engageBtn(!activeId || selectedOption !== null)} type="button">
-        ⚡ ENLAZAR ÓRBITAS Y CONSOLIDAR ACOPLE
+      <button
+        onClick={handleConfirm}
+        disabled={!activeId || selectedOption !== null}
+        style={m3MatrixStyles.engageBtn(!activeId || selectedOption !== null)}
+        type="button"
+      >
+        ⚡ CONFIRMAR Y PROBAR RESULTADO
       </button>
     </div>
   );
 }
 
 const m3MatrixStyles = {
-  container: { backgroundColor: "rgba(2, 23, 21, 0.8)", border: "2px solid #10b981", borderRadius: "14px", padding: "16px", marginTop: "10px" },
-  title: { fontSize: "11px", color: "#6ee7b7", fontWeight: "900", margin: "0 0 12px 0" },
+  container: { backgroundColor: "rgba(2, 23, 21, 0.8)", border: "2px solid #10b981", borderRadius: "14px", padding: "16px", marginTop: "10px", boxShadow: "0 0 20px rgba(16, 185, 129, 0.2)" },
+  title: { fontSize: "11px", color: "#6ee7b7", fontWeight: "900", margin: "0 0 12px 0", letterSpacing: "0.5px" },
   grid2x3: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "14px" },
-  podCard: (active, disabled) => ({
-    display: "flex", flexDirection: "column", padding: "10px 12px", borderRadius: "8px",
-    border: `2px solid ${active ? "#10b981" : "#1e3a35"}`,
-    backgroundColor: active ? "rgba(16, 185, 129, 0.2)" : "#020f0d",
-    cursor: disabled ? "not-allowed" : "pointer"
-  }),
+  podCard: (active, disabled) => ({ display: "flex", flexDirection: "column", padding: "10px 12px", borderRadius: "8px", border: `2px solid ${active ? "#10b981" : "#1e3a35"}`, backgroundColor: active ? "rgba(16, 185, 129, 0.2)" : "#020f0d", boxShadow: active ? "0 0 15px rgba(16, 185, 129, 0.4)" : "none", cursor: disabled ? "not-allowed" : "pointer", transition: "all 0.2s ease" }),
   podHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" },
   podBadge: (active) => ({ fontSize: "10px", fontWeight: "900", backgroundColor: active ? "#10b981" : "#134e4a", color: active ? "#021715" : "#6ee7b7", padding: "2px 6px", borderRadius: "4px" }),
   lockPin: (active) => ({ fontSize: "9px", fontWeight: "bold", color: active ? "#10b981" : "#4b7c75" }),
-  freqVal: (active) => ({ fontSize: "18px", fontWeight: "900", color: active ? "#6ee7b7" : "#ffffff", fontFamily: "'Courier New', monospace", textAlign: "center" }),
-  engageBtn: (disabled) => ({ width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: disabled ? "rgba(16, 185, 129, 0.2)" : "#10b981", color: disabled ? "#64748b" : "#021715", border: "none", fontWeight: "900", fontSize: "12px", cursor: disabled ? "not-allowed" : "pointer" })
+  freqVal: (active) => ({ fontSize: "18px", fontWeight: "900", color: active ? "#6ee7b7" : "#ffffff", fontFamily: "'Courier New', monospace", textAlign: "center", padding: "4px 0" }),
+  engageBtn: (disabled) => ({ width: "100%", padding: "14px", borderRadius: "8px", backgroundColor: disabled ? "rgba(16, 185, 129, 0.2)" : "#10b981", color: disabled ? "#64748b" : "#021715", border: "none", fontWeight: "900", fontSize: "12px", letterSpacing: "1px", cursor: disabled ? "not-allowed" : "pointer", boxShadow: disabled ? "none" : "0 0 15px rgba(16, 185, 129, 0.4)" })
 };
 
 // ==========================================
-// 🎯 CONTROL M4: PALANCAS TÁCTICAS BASCULANTES
+// 🎯 CONTROL M4: PALANCAS TÁCTICAS BASCULANTES COMPACTAS
 // ==========================================
 function M4ToggleSwitches({ options, onConfirm, disabled }) {
   const [selectedId, setSelectedId] = useState(null);
@@ -851,14 +1113,17 @@ function M4ToggleSwitches({ options, onConfirm, disabled }) {
         {options.map((opt) => {
           const isFlipped = selectedId === opt.id;
           return (
-            <div key={opt.id} onClick={() => !disabled && setSelectedId(opt.id)} style={m4ToggleStyles.switchPanel(isFlipped, disabled)}>
+            <div
+              key={opt.id}
+              onClick={() => !disabled && setSelectedId(opt.id)}
+              style={m4ToggleStyles.switchPanel(isFlipped, disabled)}
+            >
               <div style={m4ToggleStyles.leverAssembly}>
                 <div style={m4ToggleStyles.leverBase}>
                   <div style={m4ToggleStyles.leverHandle(isFlipped)} />
                 </div>
                 <div style={m4ToggleStyles.leverLed(isFlipped)} />
               </div>
-
               <div style={m4ToggleStyles.contentBox}>
                 <span style={m4ToggleStyles.idPill}>{opt.id}</span>
                 <span style={m4ToggleStyles.optText}>{opt.value}</span>
@@ -867,9 +1132,13 @@ function M4ToggleSwitches({ options, onConfirm, disabled }) {
           );
         })}
       </div>
-
-      <button onClick={handleExecute} disabled={!selectedId || disabled} style={m4ToggleStyles.throttleBtn(!selectedId || disabled)} type="button">
-        🚀 EMPUJAR ACELERADOR PRINCIPAL Y CONFIRMAR ORDEN
+      <button
+        onClick={handleExecute}
+        disabled={!selectedId || disabled}
+        style={m4ToggleStyles.throttleBtn(!selectedId || disabled)}
+        type="button"
+      >
+        📊 CONFIRMAR Y CONTINUAR PASO
       </button>
     </div>
   );
@@ -877,70 +1146,99 @@ function M4ToggleSwitches({ options, onConfirm, disabled }) {
 
 const m4ToggleStyles = {
   wrapper: { marginTop: "10px" },
-  compactGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" },
-  switchPanel: (active, disabled) => ({
-    display: "flex", alignItems: "center", gap: "10px", padding: "8px 10px", borderRadius: "8px",
-    border: `2px solid ${active ? "#fb923c" : "#334155"}`,
-    backgroundColor: active ? "rgba(251, 146, 60, 0.2)" : "#02040e",
-    cursor: disabled ? "not-allowed" : "pointer"
-  }),
+  compactGrid: { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "14px" },
+  switchPanel: (active, disabled) => ({ display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px", borderRadius: "8px", border: `2px solid ${active ? "#fb923c" : "#334155"}`, backgroundColor: active ? "rgba(251, 146, 60, 0.2)" : "#02040e", boxShadow: active ? "0 0 12px rgba(251, 146, 60, 0.4)" : "none", cursor: disabled ? "not-allowed" : "pointer", transition: "all 0.2s ease" }),
   leverAssembly: { display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" },
   leverBase: { width: "18px", height: "26px", backgroundColor: "#1e293b", borderRadius: "9px", border: "1px solid #475569", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" },
-  leverHandle: (active) => ({ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: active ? "#fb923c" : "#64748b", transform: active ? "translateY(-6px)" : "translateY(6px)", transition: "transform 0.2s ease" }),
+  leverHandle: (active) => ({ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: active ? "#fb923c" : "#64748b", boxShadow: active ? "0 0 8px #fb923c" : "none", transform: active ? "translateY(-6px)" : "translateY(6px)", transition: "transform 0.2s ease" }),
   leverLed: (active) => ({ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: active ? "#fb923c" : "#334155" }),
-  contentBox: { display: "flex", alignItems: "center", gap: "6px", flex: 1, overflow: "hidden" },
-  idPill: { fontSize: "10px", fontWeight: "900", backgroundColor: "#1e293b", color: "#fb923c", padding: "2px 5px", borderRadius: "4px" },
-  optText: { fontSize: "11px", lineHeight: "1.3", color: "#ffffff", fontWeight: "600" },
-  throttleBtn: (disabled) => ({ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: disabled ? "rgba(251, 146, 60, 0.2)" : "#fb923c", color: disabled ? "#64748b" : "#020308", border: "none", fontWeight: "900", fontSize: "12px", cursor: disabled ? "not-allowed" : "pointer" })
+  contentBox: { display: "flex", alignItems: "center", gap: "6px", flex: 1, overflow: "visible" },
+  idPill: { fontSize: "14px", fontWeight: "900", backgroundColor: "#1e293b", color: "#fb923c", padding: "4px 8px", borderRadius: "4px" },
+  optText: { fontSize: "16px", lineHeight: "1.5", color: "#ffffff", fontWeight: "bold", letterSpacing: "0.4px", whiteSpace: "normal" },
+  throttleBtn: (disabled) => ({ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: disabled ? "rgba(251, 146, 60, 0.2)" : "#fb923c", color: disabled ? "#64748b" : "#020308", border: "none", fontWeight: "900", fontSize: "12px", letterSpacing: "1px", cursor: disabled ? "not-allowed" : "pointer", boxShadow: disabled ? "none" : "0 0 15px rgba(251, 146, 60, 0.4)" })
 };
 
 // ==========================================
-// 🌌 APLICACIÓN PRINCIPAL (MÓDULO ALUMNO DEDICADO)
+// 🌌 COMPONENTE PRINCIPAL (APP)
 // ==========================================
 export default function App() {
   const { playCorrect, playError, playRobotChat, playMissionDone, playBadge } = useGameFeedback();
 
-  // Generar o recuperar UUID único permanente para la alumna/o
-  const [studentUuid] = useState(() => {
-    if (typeof window !== "undefined") {
-      let savedUuid = localStorage.getItem("edumision_student_uuid");
-      if (!savedUuid) {
-        savedUuid = "student-" + Math.random().toString(36).substring(2, 10);
-        localStorage.setItem("edumision_student_uuid", savedUuid);
-      }
-      return savedUuid;
-    }
-    return "student-demo-123";
-  });
-
-  // Estado del Onboarding (Carteles iniciales)
-  const [onboardingStep, setOnboardingStep] = useState(1);
+  // Onboarding en 3 Carteles para el Alumno
   const [studentOnboarded, setStudentOnboarded] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("edumision_student_onboarded") === "true";
     }
     return false;
   });
-
-  // Ficha de Tripulación
+  const [onboardingStep, setOnboardingStep] = useState(1);
   const [studentProfile, setStudentProfile] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("edumision_student_profile");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
     }
     return { nick: "", edad: "", curso: "", escuela: "" };
   });
+  const [studentNickname, setStudentNickname] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("edumision_student_profile");
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          if (p.nick) return p.nick;
+        } catch (e) {}
+      }
+      return localStorage.getItem("edumision_nickname") || "Martín G.";
+    }
+    return "Martín G.";
+  });
 
-  // Modal Explicativo del Árbol al Iniciar Misión
-  const [showMissionTreeModal, setShowMissionTreeModal] = useState(false);
+  const shipName = "";
 
-  // Estados del juego
+  const suitColor = "#38bdf8";
+
+  // Estados de navegación y roles
+  const [showStudentWelcome, setShowStudentWelcome] = useState(true);
+  
+  
+  const [showInstructionModal, setShowInstructionModal] = useState(null);
+  
+  const [students, setStudents] = useState(INITIAL_STUDENTS);
   const [transitionPhase, setTransitionPhase] = useState(false);
+  const [copyToast, setCopyToast] = useState(null);
+  const [lobbyBlocked, setLobbyBlocked] = useState(false);
+
+  // CONTROL DE LOBBY / CUPOS (Límite Máximo: 12 estudiantes)
+  const MAX_CUPOS = 12;
+
+  // 🔗 DETECCIÓN AUTOMÁTICA DE ROL POR LINK (?rol=docente, ?rol=alumno)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const rolParam = params.get("rol") || params.get("view") || params.get("modo");
+      if (rolParam === "docente" || rolParam === "profesor" || rolParam === "profe") {
+        setView("docente");
+        setShowStudentWelcome(false);
+      } else if (rolParam === "alumno" || rolParam === "estudiante" || rolParam === "chicos") {
+        setView("alumno");
+      }
+    }
+  }, []);
+
+  // 🎯 SISTEMA DE XP Y ERRORES EXACTOS POR MISIÓN
   const [missionXp, setMissionXp] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
   const [currentMissionErrors, setCurrentMissionErrors] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
+
   const [floatingXp, setFloatingXp] = useState(null);
   const [activeMission, setActiveMission] = useState("m1");
-  const [missionStatus, setMissionStatus] = useState({ m1: "activa", m2: "bloqueada", m3: "bloqueada", m4: "bloqueada" });
+  const [missionStatus, setMissionStatus] = useState({
+    m1: "activa",
+    m2: "bloqueada",
+    m3: "bloqueada",
+    m4: "bloqueada"
+  });
 
   const [currentLevelData, setCurrentLevelData] = useState(() => MathGenerator.generateM1());
   const [selectedOption, setSelectedOption] = useState(null);
@@ -949,10 +1247,14 @@ export default function App() {
   const [badgeEarned, setBadgeEarned] = useState(false);
   const [interestLogged, setInterestLogged] = useState(false);
 
+  // MEDICIÓN DE TIEMPO DE RESPUESTA EN M4 PARA DETECTAR FRAUDE (Soporte Padres / Calculadora)
+  const m4StartTimeRef = useRef(null);
+  const [possibleFraud, setPossibleFraud] = useState(false);
+
   // EDUBOT
   const [copilotMood, setCopilotMood] = useState("idle");
   const [copilotMsg, setCopilotMsg] = useState(
-    "🧠 Tu calculadora mental no necesita pilas: usá hoja y lápiz para representar las partes de la unidad antes de tocar los mandos."
+    "🤖 Copiloto listo para registrar telemetría. Solicitá 'Apoyo Matemático' en tu panel para consultar las Reglas de la Misión."
   );
   const [errorWarning, setErrorWarning] = useState(null);
   const errorTimeoutRef = useRef(null);
@@ -961,49 +1263,35 @@ export default function App() {
   const [stepIndex, setStepIndex] = useState(0);
   const [m4StepsData, setM4StepsData] = useState(() => MathGenerator.generateM4());
 
-  // Bitácora y telemetría xAPI
+  // Telemetría LRS Local
   const [bitacora, setBitacora] = useState([]);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef(null);
+  const [loginTime] = useState(new Date().toLocaleTimeString("es-AR"));
+
   const [helpsRequested, setHelpsRequested] = useState(0);
   const [totalErrors, setTotalErrors] = useState(0);
   const [helpsPerMission, setHelpsPerMission] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
   const [errorsPerMission, setErrorsPerMission] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [teacherMessage, setTeacherMessage] = useState("¡Buen viaje espacial, tripulante! Lee con atención cada señal.");
 
   const totalXp = missionXp.m1 + missionXp.m2 + missionXp.m3 + missionXp.m4;
 
-  const registrarBitacora = useCallback((verb, action, type) => {
-    const timestamp = new Date().toLocaleTimeString("es-AR");
-    setBitacora((prev) => [
-      { time: timestamp, action: `[xAPI:${verb.toUpperCase()}] ${action}`, type },
-      ...prev
-    ]);
+  // Función para copiar enlaces directos
+  const copyDirectLink = (role) => {
+    if (typeof window !== "undefined") {
+      const url = `${window.location.origin}${window.location.pathname}?rol=${role}`;
+      navigator.clipboard.writeText(url).then(() => {
+        setCopyToast(`¡Link para ${role === "alumno" ? "Chicos" : "Docentes"} copiado!`);
+        setTimeout(() => setCopyToast(null), 3000);
+      });
+    }
+  };
 
-    // Envío silencioso al servidor LRS (/api/lrs)
-    try {
-      fetch("/api/lrs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          actor: { name: studentProfile.nick || "Piloto", uuid: studentUuid },
-          verb: { id: verb, display: { "es-AR": verb } },
-          object: { id: activeMission, description: action },
-          xp: totalXp,
-          helpsRequested: helpsRequested,
-          errorsCount: totalErrors,
-          helpsPerMission: helpsPerMission,
-          errorsPerMission: errorsPerMission,
-          timestamp: new Date().toISOString()
-        })
-      }).catch(() => {});
-    } catch (e) {}
-  }, [studentProfile.nick, studentUuid, activeMission, totalXp, helpsRequested, totalErrors, helpsPerMission, errorsPerMission]);
-
-  // Temporizador y Bitácora Inicial
   useEffect(() => {
     setBitacora([
-      { time: new Date().toLocaleTimeString("es-AR"), action: "🟢 Conexión a cabina espacial activa.", type: "cidi" },
-      { time: new Date().toLocaleTimeString("es-AR"), action: `🛰️ LRS Telemetría activado con UUID: ${studentUuid.slice(0, 12)}.`, type: "system" }
+      { time: new Date().toLocaleTimeString("es-AR"), action: "🟢 Conexión a cabina de vuelo.", type: "cidi" },
+      { time: new Date().toLocaleTimeString("es-AR"), action: "🛰️ LRS Telemetría activado con UUID: 7a3b2c1d-4e5f-6a7b.", type: "system" }
     ]);
 
     timerRef.current = setInterval(() => {
@@ -1011,9 +1299,18 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(timerRef.current);
-  }, [studentUuid]);
+  }, []);
 
-  // Carga de Misiones
+  // Control de cupo del lobby al iniciar
+  useEffect(() => {
+    if (students.length >= MAX_CUPOS) {
+      setLobbyBlocked(true);
+    } else {
+      setLobbyBlocked(false);
+    }
+  }, [students]);
+
+  // Función para cargar misiones
   const loadMissionData = useCallback((missionKey) => {
     setSelectedOption(null);
     setFeedback(null);
@@ -1028,17 +1325,19 @@ export default function App() {
     } else if (missionKey === "m4") {
       setM4StepsData(MathGenerator.generateM4());
       setStepIndex(0);
+      // Iniciar conteo de fraude
+      m4StartTimeRef.current = Date.now();
     }
     setCopilotMood("idle");
     setCopilotMsg(
-      "🧠 Tu calculadora mental no necesita pilas: usá hoja y lápiz para representar las partes de la unidad antes de tocar los mandos."
+      "🤖 Copiloto listo para registrar telemetría. Solicitá 'Apoyo Matemático' en tu panel para consultar las Reglas de la Misión."
     );
   }, []);
 
   useEffect(() => {
     loadMissionData(activeMission);
     registrarBitacora("started", `Inició trayectoria: Misión ${activeMission.toUpperCase()}`, "system");
-  }, [activeMission, loadMissionData, registrarBitacora]);
+  }, [activeMission, loadMissionData]);
 
   const triggerFloatingXp = (text, color) => {
     setFloatingXp({ text, color });
@@ -1053,7 +1352,91 @@ export default function App() {
     }, 10000);
   };
 
+  const registrarBitacora = (verb, action, type) => {
+    const timestamp = new Date().toLocaleTimeString("es-AR");
+    setBitacora((prev) => [
+      { time: timestamp, action: `[xAPI:${verb.toUpperCase()}] ${action}`, type },
+      ...prev
+    ]);
+
+    // 📡 Ingesta de Telemetría xAPI en tiempo real al LRS en Vercel (/api/lrs)
+    try {
+      fetch("/api/lrs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actor: { name: studentNickname || "Alumna", uuid: "7a3b2c1d-4e5f-6a7b-8c9d-0e1f2a3b4c5d" },
+          verb: { id: verb, display: { "es-AR": verb } },
+          object: { id: activeMission, description: action },
+          xp: totalXp,
+          errors: totalErrors,
+          timestamp: new Date().toISOString()
+        })
+      }).catch((err) => console.log("LRS Buffer Offline:", err));
+    } catch (e) {
+      console.log("Error enviando telemetría xAPI:", e);
+    }
+  };
+
+  // Sincronizar Roster Docente en tiempo real
+  useEffect(() => {
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (s.id === 1) {
+          return {
+            ...s,
+            name: studentNickname,
+            
+            xp: totalXp,
+            badgeEarned: badgeEarned,
+            interestRegistered: interestLogged,
+            helpsRequested: helpsRequested,
+            errorsCount: totalErrors,
+            missions: {
+              m1: {
+                status: missionStatus.m1 === "completada" ? "completado" : "activa",
+                attempts: activeMission === "m1" ? attempts : s.missions.m1.attempts,
+                helps: helpsPerMission.m1,
+                errors: errorsPerMission.m1
+              },
+              m2: {
+                status: missionStatus.m2 === "completada" ? "completado" : missionStatus.m2,
+                attempts: activeMission === "m2" ? attempts : s.missions.m2.attempts,
+                helps: helpsPerMission.m2,
+                errors: errorsPerMission.m2
+              },
+              m3: {
+                status: missionStatus.m3 === "completada" ? "completado" : missionStatus.m3,
+                attempts: activeMission === "m3" ? attempts : s.missions.m3.attempts,
+                helps: helpsPerMission.m3,
+                errors: errorsPerMission.m3
+              },
+              m4: {
+                status: missionStatus.m4 === "completada" ? "completado" : missionStatus.m4,
+                attempts: activeMission === "m4" ? attempts : s.missions.m4.attempts,
+                helps: helpsPerMission.m4,
+                errors: errorsPerMission.m4,
+                possibleFraud: possibleFraud
+              }
+            }
+          };
+        }
+        return s;
+      })
+    );
+  }, [totalXp, missionStatus, badgeEarned, interestLogged, attempts, helpsRequested, totalErrors, helpsPerMission, errorsPerMission, studentNickname, shipName, possibleFraud]);
+
+  // Manejo de clicks de opciones
   const handleOptionClick = (option) => {
+    // Si es una advertencia de sintonización inicial (M1 / M2 en 1/1)
+    if (option.id === "W_WARN") {
+      playError();
+      setCopilotMood("thinking");
+      setCopilotMsg(`⚠️ ${option.feedback}`);
+      triggerErrorWarning(option.feedback);
+      return;
+    }
+
     setSelectedOption(option.id);
     setAttempts((prev) => prev + 1);
     setFeedback(option);
@@ -1066,7 +1449,6 @@ export default function App() {
 
       if (activeMission !== "m4") {
         registrarBitacora("completed", `Resolvió Misión ${activeMission.toUpperCase()}`, "success");
-
         const yaCompletada = missionStatus[activeMission] === "completada";
 
         setMissionXp((prev) => {
@@ -1105,11 +1487,24 @@ export default function App() {
         }
       } else {
         registrarBitacora("completed", `Superó Paso ${stepIndex + 1} del Cierre`, "success");
+        if (stepIndex === 3) {
+          // Evaluar sospecha de fraude / velocidad (Misión 4 resuelta en menos de 15 segundos)
+          const elapsed = (Date.now() - m4StartTimeRef.current) / 1000;
+          if (elapsed < 15) {
+            setPossibleFraud(true);
+            registrarBitacora("fraud_alert", "⚠️ Velocidad de respuesta excesiva: Posible asistencia o calculadora.", "error");
+          }
+          
+          setStudents((prev) =>
+            prev.map((s) => (s.id === 1 ? { ...s, justificationQuality: option.justificationType } : s))
+          );
+          registrarBitacora("justified", `Justificación: ${option.justificationType.toUpperCase()}`, "success");
+        }
       }
     } else {
       playError();
       setCopilotMood("shocked");
-      setCopilotMsg("¡Epa, casi sobrecargamos la turbina! Revisá los números en papel, no pasa nada.");
+      setCopilotMsg("¡Epa, casi cometemos un error de cálculo! Revisá los números en papel, no pasa nada.");
 
       const yaCompletada = missionStatus[activeMission] === "completada";
 
@@ -1128,11 +1523,11 @@ export default function App() {
         triggerFloatingXp("-10 XP Potencial", "#fb923c");
       }
 
-      triggerErrorWarning("Revisá con lápiz y papel. Prohibido usar calculadora: ejercitá tu razonamiento paso a paso.");
+      triggerErrorWarning("Revisá con lápiz y papel. Prohibido usar calculadora: ejercitá tu razonamiento.");
 
       registrarBitacora("failed", `Desvío: ${option.errorCode || "ERR_GENERIC"} en Misión ${activeMission.toUpperCase()}`, "error");
       setTotalErrors((prev) => prev + 1);
-      setErrorsPerMission((prev) => ({ ...prev, [activeMission]: (prev[activeMission] || 0) + 1 }));
+      setErrorsPerMission((prev) => ({ ...prev, [activeMission]: prev[activeMission] + 1 }));
 
       setTimeout(() => {
         if (activeMission !== "m4" && currentLevelData && currentLevelData.options) {
@@ -1158,7 +1553,6 @@ export default function App() {
 
   const handleNextStepM4 = () => {
     if (stepIndex < 3) {
-      playCorrect();
       setStepIndex((p) => p + 1);
       setSelectedOption(null);
       setFeedback(null);
@@ -1174,7 +1568,7 @@ export default function App() {
         setMissionStatus((prev) => ({ ...prev, m4: "completada" }));
         playMissionDone();
         setCopilotMood("happy");
-        setCopilotMsg("¡Aterrizaje épico! Te ganaste la insignia de Ingeniero/a de Fusión.");
+        setCopilotMsg("¡Aterrizaje épico! Te ganaste la insignia de Experto/a en Gestión de Recursos.");
       } else {
         setMissionXp((prev) => {
           const current = prev.m4;
@@ -1183,7 +1577,7 @@ export default function App() {
           return { ...prev, m4: nextVal };
         });
       }
-      registrarBitacora("badge_earned", "🏆 Insignia acreditada: Ingeniero/a de Fusión Estelar", "success");
+      registrarBitacora("badge_earned", "🏆 Insignia acreditada: Experto/a en Gestión de Recursos", "success");
     }
   };
 
@@ -1191,57 +1585,93 @@ export default function App() {
     playRobotChat();
     loadMissionData(activeMission);
     setCopilotMood("thinking");
-    setCopilotMsg("¡Nuevas coordenadas cargadas! Resolvé correctamente para farmear hasta el tope de la misión.");
+    setCopilotMsg("¡Nuevas coordenadas cargadas! Resolvé correctamente para farmear hasta el tope.");
     registrarBitacora("practiced", `Re-entrenando ${activeMission.toUpperCase()} para recuperar puntos.`, "system");
   };
 
   const handleCopilotHelpClick = () => {
     playRobotChat();
     setCopilotMood("thinking");
+    
+    const currentCount = helpsPerMission[activeMission] || 0;
+    const helpLevel = (currentCount % 2) + 1; // EXACTAMENTE 2 REGLAS ("dos que no haya 3")
+    
     setHelpsRequested((prev) => prev + 1);
-    setHelpsPerMission((prev) => ({ ...prev, [activeMission]: (prev[activeMission] || 0) + 1 }));
+    setHelpsPerMission((prev) => ({ ...prev, [activeMission]: currentCount + 1 }));
 
     let hint = "";
-    if (activeMission === "m1") hint = "💡 Pista EduBot: Con igual denominador (el de abajo), solo sumá los números de arriba y mantené la misma base.";
-    else if (activeMission === "m2") hint = "💡 Pista EduBot: Buscá llevar la fracción de menor denominador a la base de la otra antes de sumar.";
-    else if (activeMission === "m3") hint = "💡 Pista EduBot: Buscá el mínimo común múltiplo en las tablas de multiplicar y simplificá al final dividiendo por un divisor común.";
-    else if (activeMission === "m4") hint = "💡 Pista EduBot: Calculá cuánto le falta al numerador para llegar al entero completo.";
+    if (activeMission === "m1") {
+      if (helpLevel === 1) {
+        hint = "📐 REGLA MATEMÁTICA N° 1 (Numerador y Denominador):\nDebés saber que los dos números se llaman Numerador y Denominador. El de arriba es el Numerador (indica cuántas partes tenés) y el de abajo es el Denominador (indica en cuántas partes iguales está cortada la unidad). Tené bien claro cuál es cuál antes de operar.";
+      } else {
+        hint = "📐 REGLA MATEMÁTICA N° 2 (Suma Homogénea):\nCuando las fracciones tienen el mismo número abajo (denominadores iguales), la base no cambia porque las porciones ya son del mismo tamaño. Mantené el denominador intacto abajo y sumá únicamente los numeradores arriba. ¡No sumes los de abajo!";
+      }
+    } else if (activeMission === "m2") {
+      if (helpLevel === 1) {
+        hint = "📐 REGLA MATEMÁTICA N° 1 (Distinto Denominador):\nNo se pueden sumar directamente las fracciones si tienen diferente denominador. Para sumas de dos o más fracciones sirven las mismas reglas que vimos: primero debemos unificarlas para que compartan la misma base.";
+      } else {
+        hint = "📐 REGLA MATEMÁTICA N° 2 (Equivalencia):\nPara que dos fracciones tengan la misma base, multiplicamos el número de arriba y el de abajo de una de ellas por el mismo número (amplificación). Por ejemplo: 1/3 es exactamente lo mismo que tener 2/6. Con bases iguales, sumás arriba.";
+      }
+    } else if (activeMission === "m3") {
+      if (helpLevel === 1) {
+        hint = "📐 REGLA MATEMÁTICA N° 1 (Denominador Común):\nCuando los números de abajo no se pueden dividir entre sí directamente (como 3 y 4), buscá un número común en las tablas de multiplicar de ambos. El número más chico donde coinciden es el 12. Convertí ambas fracciones antes de operar.";
+      } else {
+        hint = "📐 REGLA MATEMÁTICA N° 2 (Simplificación):\nSi el resultado final se puede simplificar, dividí el numerador y el de abajo por el mismo divisor común para llegar a la fracción más pura (irreducible). Por ejemplo: 3/6 equivale a 1/2.";
+      }
+    } else if (activeMission === "m4") {
+      if (helpLevel === 1) {
+        hint = "📐 REGLA MATEMÁTICA N° 1 (Suma de Tres Fracciones):\nPara sumar tres o más fracciones de diferente denominador, se aplican las mismas reglas de base común: buscamos un denominador que esté en la tabla de multiplicar de todos los números de abajo antes de realizar la suma.";
+      } else {
+        hint = "📐 REGLA MATEMÁTICA N° 2 (Fracción y Entero):\nRecordá que una unidad entera se representa con el mismo número arriba y abajo (por ejemplo: 4/4 o 12/12). Si tenés 9/12, es menor que el entero entero (12/12).";
+      }
+    }
 
     setCopilotMsg(hint);
-    registrarBitacora("help", `Consultó pista en Misión ${activeMission.toUpperCase()} (sin restar XP)`, "system");
+    registrarBitacora("help", `Consultó Apoyo [Regla ${helpLevel}] en Misión ${activeMission.toUpperCase()}`, "system");
   };
 
-  const handleLogInterest = () => {
+    const handleLogInterest = () => {
     setInterestLogged(true);
     playCorrect();
     registrarBitacora("interest_registered", "El alumno solicitó continuar a la Expedición Interdisciplinaria", "success");
   };
 
-  const handleCompleteProfile = () => {
-    if (!studentProfile.nick.trim()) {
-      alert("Por favor ingresá un apodo o Nick para continuar.");
-      return;
-    }
-    localStorage.setItem("edumision_student_onboarded", "true");
-    localStorage.setItem("edumision_student_profile", JSON.stringify(studentProfile));
-    setStudentOnboarded(true);
-    setShowMissionTreeModal(true);
-    playRobotChat();
-  };
-
   return (
-    <div style={getMissionBackground(activeMission)}>
+    <div style={getMissionBackground(view, activeMission)}>
       <style>{`
         @keyframes floatUpFade {
           0% { opacity: 1; transform: translateY(0px) scale(1); }
           100% { opacity: 0; transform: translateY(-35px) scale(1.2); }
         }
+        @keyframes pulseWarning {
+          0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+          50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+        }
       `}</style>
 
-      {/* 🪐 ONBOARDING 1: ENCUADRE Y REGLAS (4 PUNTOS LIMPIOS) */}
-      {!studentOnboarded && onboardingStep === 1 && (
+      {/* 🛑 BLOQUEO DE LOBBY POR CUPO LLENO */}
+      {lobbyBlocked && view === "alumno" && (
         <div style={styles.parentModalOverlay}>
-          <div style={{ ...styles.parentModalCard, maxWidth: "460px" }}>
+          <div style={{ ...styles.parentModalCard, borderColor: "#ef4444" }}>
+            <div style={{ ...styles.parentModalTitle, color: "#ef4444" }}>
+              <span>🛑</span> AULA COMPLETA 🏕️
+            </div>
+            <p style={{ fontSize: "13px", lineHeight: "1.6", color: "#cbd5e1", margin: "14px 0" }}>
+              Expedición Completa. El cupo de esta expedición está lleno (Máximo {MAX_CUPOS} estudiantes activos).
+              <br /><br />
+              Esperá a que la docente autorice nuevos ingresos o cierre el aula actual para continuar.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 MODAL DE INICIO DE NICKNAME Y REGLAS (REFUGIO DE MONTAÑA) */}
+      {/* 🪐 ONBOARDING EN 3 CARTELES PARA EL ALUMNO */}
+  {!studentOnboarded && view === "alumno" && (
+    <div style={styles.parentModalOverlay}>
+      <div style={{ ...styles.parentModalCard, maxWidth: "460px" }}>
+        {onboardingStep === 1 && (
+          <div>
             <div style={{ ...styles.parentModalTitle, color: "#38bdf8" }}>
               <span>🪐</span> PRUEBA DE EXPLORACIÓN EDUCATIVA — EDUMISIÓN
             </div>
@@ -1262,6 +1692,7 @@ export default function App() {
                 <span style={styles.ruleIcon}>🔒</span>
                 <div><strong>Protección de Datos:</strong> Por seguridad, no ingreses tu nombre completo.</div>
               </div>
+
             </div>
 
             <button 
@@ -1275,13 +1706,10 @@ export default function App() {
               Siguiente ➔
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 🚀 ONBOARDING 2: FICHA DE LA TRIPULACIÓN */}
-      {!studentOnboarded && onboardingStep === 2 && (
-        <div style={styles.parentModalOverlay}>
-          <div style={{ ...styles.parentModalCard, maxWidth: "460px" }}>
+        {onboardingStep === 2 && (
+          <div>
             <div style={{ ...styles.parentModalTitle, color: "#38bdf8" }}>
               <span>🚀</span> FICHA DE LA TRIPULACIÓN
             </div>
@@ -1291,559 +1719,588 @@ export default function App() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "18px", textAlign: "left" }}>
               <div>
-                <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-                  Nick / Apodo de Vuelo:
+                <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
+                  Nick / Apodo (no ingreses tu nombre completo):
                 </label>
-                <input
-                  type="text"
+                <input 
+                  type="text" 
                   value={studentProfile.nick}
                   onChange={(e) => setStudentProfile({ ...studentProfile, nick: e.target.value })}
-                  placeholder="Ej: Marto_05 (NO uses tu nombre completo)"
-                  style={styles.profileInput}
+                  placeholder="Ej: Marto_05"
+                  style={styles.teacherDashboardInput}
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div>
-                  <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
                     Edad:
                   </label>
-                  <input
-                    type="text"
+                  <input 
+                    type="text" 
                     value={studentProfile.edad}
                     onChange={(e) => setStudentProfile({ ...studentProfile, edad: e.target.value })}
                     placeholder="Ej: 12 años"
-                    style={styles.profileInput}
+                    style={styles.teacherDashboardInput}
                   />
                 </div>
-                <div>
-                  <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
                     Año / Curso:
                   </label>
-                  <input
-                    type="text"
+                  <input 
+                    type="text" 
                     value={studentProfile.curso}
                     onChange={(e) => setStudentProfile({ ...studentProfile, curso: e.target.value })}
-                    placeholder="Ej: 1° B"
-                    style={styles.profileInput}
+                    placeholder="Ej: 1° Año B"
+                    style={styles.teacherDashboardInput}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
+                <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
                   Escuela:
                 </label>
-                <input
-                  type="text"
+                <input 
+                  type="text" 
                   value={studentProfile.escuela}
                   onChange={(e) => setStudentProfile({ ...studentProfile, escuela: e.target.value })}
                   placeholder="Ej: IPEM 128"
-                  style={styles.profileInput}
+                  style={styles.teacherDashboardInput}
                 />
               </div>
             </div>
 
-            <p style={{ fontSize: "11px", color: "#38bdf8", fontStyle: "italic", marginBottom: "16px" }}>
-              "¡Gracias por sumarte a estas misiones que van a ser parte de una gran aventura!"
+            <p style={{ fontSize: "11px", color: "#38bdf8", marginBottom: "14px", fontStyle: "italic", textAlign: "center" }}>
+              ¡Gracias por sumarte a estas misiones que van a ser parte de una gran aventura! 🚀
             </p>
 
             <button 
-              onClick={handleCompleteProfile}
-              style={{ ...styles.parentModalBtn, backgroundColor: "#10b981", color: "#ffffff" }}
+              onClick={() => {
+                playRobotChat();
+                const finalNick = studentProfile.nick || "Martín G.";
+                setStudentNickname(finalNick);
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("edumision_student_profile", JSON.stringify({ ...studentProfile, nick: finalNick }));
+                  localStorage.setItem("edumision_nickname", finalNick);
+                }
+                setOnboardingStep(3);
+              }}
+              style={styles.parentModalBtn}
               type="button"
             >
-              🚀 ¡INICIAR DESPEGUE!
+              🚀 CONTINUAR A LA CABINA
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 🌲 MODAL 3: EXPLICACIÓN DEL ÁRBOL DE MISIONES */}
-      {showMissionTreeModal && (
-        <div style={styles.parentModalOverlay}>
-          <div style={{ ...styles.parentModalCard, maxWidth: "480px" }}>
-            <div style={{ ...styles.parentModalTitle, color: "#10b981" }}>
+        {onboardingStep === 3 && (
+          <div>
+            <div style={{ ...styles.parentModalTitle, color: "#38bdf8" }}>
               <span>🗺️</span> TU MAPA DE NAVEGACIÓN ESPACIAL
             </div>
             
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "18px", textAlign: "left" }}>
+            <div style={styles.rulesList}>
               <div style={styles.ruleItem}>
-                <span style={{ fontSize: "20px" }}>🌲</span>
-                <div style={{ fontSize: "12px" }}>
-                  <strong>Árbol de Misiones:</strong> Avanzás paso a paso desde la M1 hasta la M4 de Cierre.
-                </div>
+                <span style={styles.ruleIcon}>🌲</span>
+                <div><strong>Árbol de Misiones:</strong> Vas a avanzar paso a paso desde la Misión 1 hasta la Misión 4 de Cierre para obtener la Insignia de Maestría.</div>
               </div>
-
               <div style={styles.ruleItem}>
-                <span style={{ fontSize: "20px" }}>🔄</span>
-                <div style={{ fontSize: "12px" }}>
-                  <strong>Reintento Libre:</strong> Si cometés un error, podés reintentar para recuperar todo el XP de la misión.
-                </div>
+                <span style={styles.ruleIcon}>🔄</span>
+                <div><strong>Reintento Libre:</strong> Si cometés un desvío, no perdés tu avance. Podés volver a realizar las misiones cuando quieras para recuperar el XP.</div>
               </div>
-
               <div style={styles.ruleItem}>
-                <span style={{ fontSize: "20px" }}>💡</span>
-                <div style={{ fontSize: "12px" }}>
-                  <strong>Pistas Sin Penalización:</strong> Pedir ayuda a EduBot <strong>NO resta XP</strong>. Solo queda registrado en la bitácora.
-                </div>
+                <span style={styles.ruleIcon}>💡</span>
+                <div><strong>Pistas Sin Penalización:</strong> Pedir pistas a EduBot no te resta experiencia; solo queda registrado en la bitácora para tu docente.</div>
               </div>
-
               <div style={styles.ruleItem}>
-                <span style={{ fontSize: "20px" }}>📝</span>
-                <div style={{ fontSize: "12px" }}>
-                  <strong>Cuentas en Papel:</strong> Tené siempre listo papel y lápiz antes de presionar los botones.
-                </div>
+                <span style={styles.ruleIcon}>📝</span>
+                <div><strong>Lápiz y Papel:</strong> Tené siempre a mano hoja y lápiz para resolver las cuentas antes de presionar los botones.</div>
               </div>
             </div>
 
             <button 
               onClick={() => {
-                setShowMissionTreeModal(false);
                 playRobotChat();
+                setStudentOnboarded(true);
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("edumision_student_onboarded", "true");
+                }
               }}
               style={{ ...styles.parentModalBtn, backgroundColor: "#10b981" }}
               type="button"
             >
-              🛰️ ¡ENTRAR A LA CABINA!
+              🛰️ ENTENDIDO, ¡A LAS MISIONES!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+
+  {/* 🌌 EFECTO DE TRANSICIÓN HIPERESPACIAL */}
+      {transitionPhase && <HyperspaceJump />}
+
+      {/* ❓ MODAL DE INSTRUCCIONES TÁCTILES */}
+      {showInstructionModal && (
+        <div style={styles.parentModalOverlay}>
+          <div style={{ ...styles.parentModalCard, maxWidth: "540px", textAlign: "left" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #38bdf8", paddingBottom: "10px", marginBottom: "16px" }}>
+              <span style={{ color: "#38bdf8", fontSize: "18px", fontWeight: "900" }}>⚙️ MANUAL DE USO DEL PANEL TÁCTIL</span>
+              <button 
+                onClick={() => setShowInstructionModal(null)} 
+                style={{ background: "none", border: "none", color: "#64748b", fontSize: "24px", cursor: "pointer" }}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div style={{ fontSize: "15px", color: "#cbd5e1", lineHeight: "1.7", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <p>Para resolver esta tarea y registrar tus recursos en el refugio, seguí estos pasos:</p>
+              
+              {showInstructionModal === "m1" && (
+                <div style={{ backgroundColor: "#02040e", padding: "14px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                  <strong style={{ color: "#38bdf8" }}>Misión 1: Suministro de Agua de Emergencia</strong>
+                  <p style={{ margin: "8px 0 0 0", fontSize: "14px", color: "#cbd5e1", lineHeight: "1.6" }}>
+                    1. Mirá las dos fracciones de arriba que necesitás sumar (comparten la misma base).<br />
+                    2. Usá los botones <strong>＋</strong> y <strong>－</strong> del primer mando para colocar las partes totales reunidas (<strong>Numerador</strong>).<br />
+                    3. Usá los botones <strong>＋</strong> y <strong>－</strong> del segundo mando para colocar el tamaño del tanque común (<strong>Denominador</strong>).<br />
+                    4. Presioná <strong>📊 CONFIRMAR FRACCIÓN Y PROBAR</strong> para probar el resultado.
+                  </p>
+                </div>
+              )}
+
+              {showInstructionModal === "m2" && (
+                <div style={{ backgroundColor: "#02040e", padding: "14px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                  <strong style={{ color: "#fb923c" }}>Misión 2: Raciones de Alimento Seco</strong>
+                  <p style={{ margin: "8px 0 0 0", fontSize: "14px", color: "#cbd5e1", lineHeight: "1.6" }}>
+                    1. Mirá las dos fracciones de raciones con distinto denominador (una es múltiplo de la otra).<br />
+                    2. Llevá la fracción de menor denominador a la base de la otra multiplicando arriba y abajo (amplificación).<br />
+                    3. Sumá los numeradores unificados sobre la base común.<br />
+                    4. Usá los mandos para colocar las raciones en el numerador y la base común en el denominador, y presioná <strong>📊 CONFIRMAR Y PROBAR FRACCIÓN</strong>.
+                  </p>
+                </div>
+              )}
+
+              {showInstructionModal === "m3" && (
+                <div style={{ backgroundColor: "#02040e", padding: "14px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                  <strong style={{ color: "#10b981" }}>Misión 3: Red Eléctrica del Refugio</strong>
+                  <p style={{ margin: "8px 0 0 0", fontSize: "14px", color: "#cbd5e1", lineHeight: "1.6" }}>
+                    1. Mirá el cableado instalado por ambos grupos con distinto denominador.<br />
+                    2. Buscá un múltiplo común mínimo para unificar los denominadores, suma arriba y simplificá el resultado final si es posible (fracción irreducible).<br />
+                    3. Tocá la tarjeta de la cuadrícula que tenga tu resultado e ingresá la confirmación correspondiente.
+                  </p>
+                </div>
+              )}
+
+              {showInstructionModal === "m4" && (
+                <div style={{ backgroundColor: "#02040e", padding: "14px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                  <strong style={{ color: "#fb923c" }}>Misión 4: Gestión de Colonos (El Día 1)</strong>
+                  <p style={{ margin: "8px 0 0 0", fontSize: "14px", color: "#cbd5e1", lineHeight: "1.6" }}>
+                    1. Esta es una tarea de consolidación en 4 pasos para analizar los recursos del refugio.<br />
+                    2. Leé cada enunciado técnico, resolvé la operación en papel y seleccioná la palanca táctica correspondiente.<br />
+                    3. En el paso 4, seleccioná la justificación matemática precisa que valide tus conclusiones.
+                  </p>
+                </div>
+              )}
+
+              <p style={{ fontSize: "13px", color: "#fb923c", fontStyle: "italic", marginTop: "8px" }}>
+                💡 ¡Recordá que usar lápiz y papel para hacer las cuentas a mano antes de pulsar ayuda a no cometer errores!
+              </p>
+            </div>
+
+            <button 
+              onClick={() => setShowInstructionModal(null)} 
+              style={{ ...styles.parentModalBtn, marginTop: "20px", backgroundColor: "#fb923c" }}
+              type="button"
+            >
+              ✕ CERRAR INSTRUCCIONES
             </button>
           </div>
         </div>
       )}
 
-      {/* 🌌 EFECTO DE TRANSICIÓN HIPERESPACIAL */}
-      {transitionPhase && <HyperspaceJump />}
-
-      {/* 🧭 BARRA DE ENCABEZADO */}
-      <nav style={styles.navBar}>
-        <div style={styles.navLogo}>
-          <span style={styles.navLogoEll}>EM</span> 
-          <span>EduMisión Córdoba · <strong style={{ color: "#38bdf8" }}>{studentProfile.nick || "Piloto"}</strong></span>
+      {/* TOAST DE COPIADO DE LINK */}
+      {copyToast && (
+        <div style={styles.copyToastCard}>
+          {copyToast}
         </div>
-        
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <span style={{ fontSize: "11px", color: "#94a3b8" }}>Escuela: <strong>{studentProfile.escuela || "Sin registrar"}</strong></span>
-          <span style={styles.activePill}>🟢 CABINA AUTÓNOMA</span>
-        </div>
-      </nav>
+      )}
 
-      {/* JUEGO PRINCIPAL */}
-      <div style={styles.gameWrapper}>
-        <div style={styles.gameHeader}>
-          <div>
-            <h1 style={{ ...styles.gameTitle, color: "#38bdf8" }}>Odisea Espacial: Galaxia Fracciones</h1>
-            <p style={styles.gameSubtitle}>Piloto: <strong>{studentProfile.nick || "Martín G."}</strong> · Curso: {studentProfile.curso || "1° Año"}</p>
+      {/* 🧭 BARRA DE NAVEGACIÓN */}
+        {/* 🧭 BARRA DE NAVEGACIÓN - MÓDULO ALUMNO */}
+  <nav style={styles.navBar}>
+    <div style={styles.navLogo}>
+      <span style={styles.navLogoEll}>EM</span> 
+      <span>EduMisión Córdoba · <strong style={{ color: "#38bdf8" }}>{shipName}</strong></span>
+    </div>
+    
+    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+      <button onClick={() => copyDirectLink("alumno")} style={styles.linkShareBtn} title="Copiar link para compartir">
+        📋 Copiar Link de Juego
+      </button>
+    </div>
+  </nav>
+
+      
+        <div style={styles.gameWrapper}>
+          {/* ⚠️ BANNER DE ENCUADRE DE ENTRENAMIENTO DE SUPERVIVENCIA */}
+          <div style={{
+            backgroundColor: "rgba(251, 146, 60, 0.08)",
+            border: "2px solid #fb923c",
+            borderRadius: "10px",
+            padding: "14px 18px",
+            marginBottom: "20px",
+            fontSize: "14px",
+            lineHeight: "1.7",
+            color: "#cbd5e1",
+            boxShadow: "0 0 15px rgba(251, 146, 60, 0.15)"
+          }}>
+            <strong>⚠️ ENCUADRE DE ENTRENAMIENTO DE SUPERVIVENCIA:</strong><br />
+            <span style={{ fontStyle: "italic" }}>
+              «Necesitamos aprender a gestionar recursos y a construir refugios seguros en la Tierra hoy, porque en el futuro deberemos hacerlo bajo condiciones extremas y mucho menos favorables. Cada cálculo correcto asegura nuestra supervivencia.»
+            </span>
           </div>
-          <div style={styles.sessionStatus}>
-            <span style={styles.activePill}>🟢 EN LÍNEA</span>
-            <span style={styles.timerPill}>⏱️ {timerSeconds}s</span>
-          </div>
-        </div>
 
-        {/* BARRA DE XP Y MAPA TÁCTICO */}
-        <div style={styles.progressionCard}>
-          <div style={styles.xpHeader}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
-              <span style={styles.xpBigLabel}>EXPERIENCIA GANADA EN MISIONES LOGRADAS:</span>
-              <span style={styles.xpBigValue}>{totalXp} / 500 XP</span>
+          <div style={styles.gameHeader}>
+            <div>
+              <h1 style={{ ...styles.gameTitle, color: suitColor, fontSize: "24px", fontWeight: "bold" }}>Proyecto Éxodo: Entrenamiento de Supervivencia</h1>
+              <p style={styles.gameSubtitle}>Refugio de Montaña · Piloto: <strong>{studentNickname}</strong> · Diagnóstico de Fracciones</p>
             </div>
-            {floatingXp && (
-              <span style={{
-                fontSize: "16px",
-                fontWeight: "900",
-                color: floatingXp.color,
-                animation: "floatUpFade 1.4s ease-out forwards"
-              }}>
-                {floatingXp.text}
-              </span>
-            )}
+            <div style={styles.sessionStatus}>
+              <span style={styles.activePill}>🟢 EN LÍNEA</span>
+              <span style={styles.timerPill}>⏱️ {timerSeconds}s</span>
+            </div>
           </div>
 
-          <div style={styles.progressBarBg}>
-            <div style={{ ...styles.progressBarFill, width: `${(totalXp / 500) * 100}%` }} />
-          </div>
-
-          {badgeEarned && (
-            <div style={styles.glowingInsigniaCard}>
-              <span style={{ fontSize: '40px', filter: 'drop-shadow(0 0 10px #fb923c)' }}>🏆</span>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                <span style={styles.insigniaTitle}>INGENIERO/A DE FUSIÓN ESTELAR</span>
-                <span style={styles.insigniaSubtitle}>Acreditación Oficial de Maestría en Fracciones · EduMisión Córdoba</span>
+          {/* BARRA DE XP GIGANTE Y MAPA ORBITAL */}
+          <div style={styles.progressionCard}>
+            <div style={styles.xpHeader}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+                <span style={styles.xpBigLabel}>EXPERIENCIA EN MISIONES LOGRADAS:</span>
+                <span style={styles.xpBigValue}>{totalXp} / 500 XP</span>
               </div>
+              {floatingXp && (
+                <span style={{
+                  fontSize: "16px",
+                  fontWeight: "900",
+                  color: floatingXp.color,
+                  animation: "floatUpFade 1.4s ease-out forwards"
+                }}>
+                  {floatingXp.text}
+                </span>
+              )}
             </div>
-          )}
 
-          {/* MAPA TÁCTICO */}
-          <div style={styles.tacticalMap}>
-            {[
-              { key: "m1", title: "M1: SINTONÍA RADAR", icon: "🛰️", cap: 100 },
-              { key: "m2", title: "M2: VÁLVULAS DE FLUJO", icon: "🚀", cap: 100 },
-              { key: "m3", title: "M3: ENLACE ÓRBITAS", icon: "🛸", cap: 100 }
-            ].map((m) => {
-              const isAct = activeMission === m.key;
-              const st = missionStatus[m.key];
-              return (
-                <button
-                  key={m.key}
-                  onClick={() => st !== "bloqueada" && setActiveMission(m.key)}
-                  disabled={st === "bloqueada"}
-                  style={styles.tacticalNode(isAct, st)}
-                >
-                  <div style={styles.tacticalNodeHeader}>
-                    <span style={{ fontSize: "22px" }}>{m.icon}</span>
-                    <span style={{ fontSize: "12px", fontWeight: "900", color: "#38bdf8" }}>{missionXp[m.key]}/{m.cap} XP</span>
-                  </div>
-                  <div style={{ fontSize: "13px", fontWeight: "900", color: "#ffffff", margin: "6px 0" }}>{m.title}</div>
-                  <div style={styles.statusPill(st)}>
-                    {st === "completada" ? "✔ CONSOLIDADA" : isAct ? "⚡ EN CURSO" : st === "bloqueada" ? "🔒 BLOQUEADA" : "LISTA"}
-                  </div>
-                </button>
-              );
-            })}
+            <div style={styles.progressBarBg}>
+              <div style={{ ...styles.progressBarFill, width: `${(totalXp / 500) * 100}%` }} />
+            </div>
 
-            {/* M4 PROTAGÓNICA */}
-            {(() => {
-              const isAct = activeMission === "m4";
-              const st = missionStatus.m4;
-              return (
-                <button
-                  onClick={() => st !== "bloqueada" && setActiveMission("m4")}
-                  disabled={st === "bloqueada"}
-                  style={styles.tacticalNodeM4(isAct, st)}
-                >
-                  <div style={styles.tacticalNodeHeader}>
-                    <span style={{ fontSize: "26px" }}>👑</span>
-                    <span style={{ fontSize: "13px", fontWeight: "900", color: "#fb923c" }}>{missionXp.m4}/200 XP</span>
-                  </div>
-                  <div style={{ fontSize: "14px", fontWeight: "900", color: "#fb923c", margin: "6px 0", letterSpacing: "0.5px" }}>
-                    M4: CRUCERO FINAL
-                  </div>
-                  <div style={{ ...styles.statusPill(st), color: st === "completada" ? "#4ade80" : "#fb923c" }}>
-                    {st === "completada" ? "🏆 MAESTRÍA LOGRADA" : isAct ? "🔥 MISIÓN ACTIVA" : st === "bloqueada" ? "🔒 BLOQUEADA" : "LISTA"}
-                  </div>
-                </button>
-              );
-            })()}
-          </div>
-        </div>
-
-        {/* ÁREA CENTRAL DE JUEGO */}
-        <div style={styles.mainLayout}>
-          <div style={styles.gameColumn}>
-            {activeMission !== "m4" ? (
-              currentLevelData && (
-                <div style={styles.card}>
-                  <h2 style={{ ...styles.cardTitle, color: "#38bdf8" }}>Nivel en Curso: Misión {activeMission.toUpperCase()}</h2>
-                  <p style={styles.instructions}>
-                    {activeMission === "m1" && "Dos señales orbitales laten en la misma frecuencia. Sintonizá los mandos para fijar la base."}
-                    {activeMission === "m2" && "Calibrá las válvulas de inyección para combinar el combustible de ambos depósitos."}
-                    {activeMission === "m3" && "Enlazá las órbitas simplificando la fracción al valor más puro para acoplar los módulos."}
-                  </p>
-                  
-                  <div style={styles.equationBox}>
-                    {currentLevelData.equation}
-                  </div>
-
-                  {activeMission === "m1" ? (
-                    <M1StepperControl
-                      equation={currentLevelData.equation}
-                      options={currentLevelData.options}
-                      handleOptionClick={handleOptionClick}
-                      selectedOption={selectedOption}
-                    />
-                  ) : activeMission === "m2" ? (
-                    <M2TurbineControl
-                      options={currentLevelData.options}
-                      handleOptionClick={handleOptionClick}
-                      selectedOption={selectedOption}
-                    />
-                  ) : (
-                    <M3OrbitalConsole
-                      options={currentLevelData.options}
-                      handleOptionClick={handleOptionClick}
-                      selectedOption={selectedOption}
-                    />
-                  )}
-
-                  {feedback && (
-                    <div style={{
-                      ...styles.feedbackCard,
-                      borderColor: feedback.correct ? "#10b981" : "#fb923c",
-                      backgroundColor: feedback.correct ? "rgba(16, 185, 129, 0.08)" : "rgba(251, 146, 60, 0.08)",
-                      color: feedback.correct ? "#4ade80" : "#fb923c"
-                    }}>
-                      <p style={{ margin: 0, fontWeight: "bold", fontSize: "14px" }}>
-                        {feedback.correct ? "🛰️ COMBINACIÓN EXITOSA" : "⚠ ADVERTENCIA DE DESVÍO (-10 XP)"}
-                      </p>
-                      <p style={{ fontSize: "13px", margin: "4px 0 0 0", color: "#cbd5e1" }}>{feedback.feedback}</p>
-
-                      {!feedback.correct && feedback.errorCode && (
-                        <div style={styles.expertAlert}>
-                          <strong>Recomendación:</strong> {SYSTEM_EXPERT_ALERTS[feedback.errorCode]}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {missionStatus[activeMission] === "completada" && (
-                    <div style={{ textAlign: "center", marginTop: "16px" }}>
-                      <button onClick={handleRegenerate} style={styles.farmBtn}>
-                        🔁 Cargar nuevos números para farmear (hasta 100 XP)
-                      </button>
-                    </div>
-                  )}
+            {badgeEarned && (
+              <div style={styles.glowingInsigniaCard}>
+                <span style={{ fontSize: '40px', filter: 'drop-shadow(0 0 10px #fb923c)' }}>🏆</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                  <span style={styles.insigniaTitle}>INGENIERO/A DE FUSIÓN ESTELAR</span>
+                  <span style={styles.insigniaSubtitle}>Acreditación Oficial de Maestría en Fracciones · EduMisión Córdoba</span>
                 </div>
-              )
-            ) : (
-              m4StepsData && m4StepsData[stepIndex] && (
-                <div style={{ ...styles.card, border: "2px solid #fb923c" }}>
-                  <div style={styles.closingHeader}>
-                    <h2 style={{ ...styles.cardTitle, color: "#fb923c" }}>🚀 Misión de Cierre: Trayectoria Final</h2>
-                    <span style={styles.badgePill}>PASO {stepIndex + 1} DE 4</span>
-                  </div>
-                  
-                  <h3 style={{ fontSize: "14px", color: "#38bdf8", margin: "0 0 8px 0" }}>
-                    {m4StepsData[stepIndex].title}
-                  </h3>
+              </div>
+            )}
 
-                  <div style={styles.m4PromptBox}>
-                    {m4StepsData[stepIndex].prompt}
-                  </div>
-
-                  <M4ToggleSwitches
-                    options={m4StepsData[stepIndex].options}
-                    onConfirm={handleOptionClick}
-                    disabled={selectedOption !== null}
-                  />
-
-                  {feedback && (
-                    <div style={{
-                      ...styles.feedbackCard,
-                      borderColor: feedback.correct ? "#10b981" : "#fb923c",
-                      backgroundColor: feedback.correct ? "rgba(16, 185, 129, 0.08)" : "rgba(251, 146, 60, 0.08)",
-                      color: feedback.correct ? "#4ade80" : "#fb923c"
-                    }}>
-                      <p style={{ margin: 0, fontWeight: "bold", fontSize: "14px" }}>
-                        {feedback.correct ? "🛰️ AJUSTE CONFIRMADO" : "⚠ ALERTA DE PRESIÓN"}
-                      </p>
-                      <p style={{ fontSize: "13px", margin: "4px 0 0 0", color: "#cbd5e1" }}>{feedback.feedback}</p>
-                      
-                      {feedback.correct && (
-                        <button onClick={handleNextStepM4} style={styles.btnPrimary}>
-                          {stepIndex < 3 ? "Avanzar al Siguiente Paso ➔" : "Aterrizar Nave e Inscribir Insignia 🏆"}
-                        </button>
-                      )}
+            {/* MAPA TÁCTICO */}
+            <div style={styles.tacticalMap}>
+              {[
+                { key: "m1", title: "M1: SUMINISTRO AGUA", icon: "💧", cap: 100 },
+                { key: "m2", title: "M2: RACIONES COMIDA", icon: "🌾", cap: 100 },
+                { key: "m3", title: "M3: CONEXIÓN ELÉCTRICA", icon: "☀️", cap: 100 }
+              ].map((m) => {
+                const isAct = activeMission === m.key;
+                const st = missionStatus[m.key];
+                return (
+                  <button
+                    key={m.key}
+                    onClick={() => st !== "bloqueada" && setActiveMission(m.key)}
+                    disabled={st === "bloqueada"}
+                    style={styles.tacticalNode(isAct, st)}
+                  >
+                    <div style={styles.tacticalNodeHeader}>
+                      <span style={{ fontSize: "22px" }}>{m.icon}</span>
+                      <span style={{ fontSize: "12px", fontWeight: "900", color: "#38bdf8" }}>{missionXp[m.key]}/{m.cap} XP</span>
                     </div>
-                  )}
+                    <div style={{ fontSize: "13px", fontWeight: "900", color: "#ffffff", margin: "6px 0" }}>{m.title}</div>
+                    <div style={styles.statusPill(st)}>
+                      {st === "completada" ? "✔ CONSOLIDADA" : isAct ? "⚡ EN CURSO" : st === "bloqueada" ? "🔒 BLOQUEADA" : "LISTA"}
+                    </div>
+                  </button>
+                );
+              })}
 
-                  {badgeEarned && (
-                    <div style={styles.rewardCard}>
-                      <h3 style={{ color: "#fb923c", margin: "0 0 4px 0" }}>🌌 PRÓXIMA EXPEDICIÓN: El Día 1</h3>
-                      <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 12px 0" }}>
-                        Lengua + Ciencias Naturales + Matemática integradas en una expedición de supervivencia.
-                      </p>
-                      {!interestLogged ? (
-                        <button onClick={handleLogInterest} style={styles.btnInterest}>
-                          🚀 ¡Deseo continuar con esta aventura interdisciplinaria!
-                        </button>
-                      ) : (
-                        <div style={styles.interestConfirmed}>
-                          ✨ ¡Anotado, tripulante! Registramos tu interés en la base de datos oficial.
-                        </div>
-                      )}
-                      <div style={{ marginTop: "14px" }}>
+              {/* M4 PROTAGÓNICA */}
+              {(() => {
+                const isAct = activeMission === "m4";
+                const st = missionStatus.m4;
+                return (
+                  <button
+                    onClick={() => st !== "bloqueada" && setActiveMission("m4")}
+                    disabled={st === "bloqueada"}
+                    style={styles.tacticalNodeM4(isAct, st)}
+                  >
+                    <div style={styles.tacticalNodeHeader}>
+                      <span style={{ fontSize: "26px" }}>🏕️</span>
+                      <span style={{ fontSize: "13px", fontWeight: "900", color: "#fb923c" }}>{missionXp.m4}/200 XP</span>
+                    </div>
+                    <div style={{ fontSize: "14px", fontWeight: "900", color: "#fb923c", margin: "6px 0", letterSpacing: "0.5px" }}>
+                      M4: GESTIÓN COLONOS
+                    </div>
+                    <div style={{ ...styles.statusPill(st), color: st === "completada" ? "#4ade80" : "#fb923c" }}>
+                      {st === "completada" ? "🏆 MAESTRÍA LOGRADA" : isAct ? "🔥 MISIÓN ACTIVA" : st === "bloqueada" ? "🔒 BLOQUEADA" : "LISTA"}
+                    </div>
+                  </button>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* ÁREA CENTRAL */}
+          <div style={styles.mainLayout}>
+            <div style={{ ...styles.gameColumn, transition: "all 0.6s ease-in-out", filter: transitionPhase ? "blur(20px) scale(0.95)" : "none", opacity: transitionPhase ? 0.1 : 1 }}>
+              {activeMission !== "m4" ? (
+                currentLevelData && (
+                  <div style={styles.card}>
+                    <h2 style={{ ...styles.cardTitle, color: suitColor, fontSize: "16px", fontWeight: "bold" }}>Tarea en Curso: Misión {activeMission.toUpperCase()}</h2>
+                    <p style={{ ...styles.instructions, fontSize: "15px", lineHeight: "1.6", color: "#cbd5e1", marginBottom: "14px" }}>
+                      {activeMission === "m1" && "El equipo alfa junta 1/5 de un tanque de agua y el equipo beta aporta 2/5 del mismo tanque. Debemos consolidar el total en el medidor."}
+                      {activeMission === "m2" && "El refugio cuenta con 1/3 de caja de raciones secas y recibe un aporte de 1/6 de caja de raciones del depósito auxiliar. Para almacenarlo todo junto, debemos unificar los contenedores."}
+                      {activeMission === "m3" && "Para conectar la calefacción eléctrica del campamento, un grupo instala 1/3 del cableado del panel solar y otro grupo instala 1/4. Buscá el resultado simplificado para acoplar la energía."}
+                    </p>
+
+                    {/* ❓ BOTÓN DE INSTRUCCIONES EMERGENTES */}
+                    <button
+                      onClick={() => setShowInstructionModal(activeMission)}
+                      style={{
+                        background: "none",
+                        border: "1px dashed #38bdf8",
+                        color: "#38bdf8",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        marginBottom: "16px",
+                        fontWeight: "bold",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        width: "100%",
+                        justifyContent: "center"
+                      }}
+                      type="button"
+                    >
+                      ❓ ¿Cómo usar los mandos de esta tarea?
+                    </button>
+                    
+                    <div style={{ fontSize: "16px", fontWeight: "bold", color: "#fb923c", margin: "14px 0 12px 0", textAlign: "center" }}>
+                      👉 Resolvé esta operación:
+                    </div>
+
+                    <div style={styles.equationBox}>
+                      {currentLevelData.equation}
+                    </div>
+
+                    <button
+                      onClick={handleCopilotHelpClick}
+                      style={styles.yellowNeonHelpBtn}
+                      type="button"
+                    >
+                      💡 CONSULTAR {getMissionRulesName(activeMission).toUpperCase()} (Apoyo N° {((helpsPerMission[activeMission] || 0) % 2) + 1} de 2)
+                    </button>
+
+                    {activeMission === "m1" ? (
+                      <M1StepperControl
+                        equation={currentLevelData.equation}
+                        options={currentLevelData.options}
+                        handleOptionClick={handleOptionClick}
+                        selectedOption={selectedOption}
+                      />
+                    ) : activeMission === "m2" ? (
+                      <M2TurbineStepperControl
+                        equation={currentLevelData.equation}
+                        options={currentLevelData.options}
+                        handleOptionClick={handleOptionClick}
+                        selectedOption={selectedOption}
+                      />
+                    ) : (
+                      <M3OrbitalConsole
+                        options={currentLevelData.options}
+                        handleOptionClick={handleOptionClick}
+                        selectedOption={selectedOption}
+                      />
+                    )}
+
+                    {/* Retroalimentación */}
+                    {feedback && (
+                      <div style={{
+                        ...styles.feedbackCard,
+                        borderColor: feedback.correct ? "#10b981" : "#fb923c",
+                        backgroundColor: feedback.correct ? "rgba(16, 185, 129, 0.08)" : "rgba(251, 146, 60, 0.08)",
+                        color: feedback.correct ? "#4ade80" : "#fb923c"
+                      }}>
+                        <p style={{ margin: 0, fontWeight: "bold", fontSize: "14px" }}>
+                          {feedback.correct ? "🛰️ COMBINACIÓN EXITOSA" : "⚠ ADVERTENCIA DE DESVÍO"}
+                        </p>
+                        <p style={{ fontSize: "13px", margin: "4px 0 0 0", color: "#cbd5e1" }}>{feedback.feedback}</p>
+
+                        {!feedback.correct && feedback.errorCode && (
+                          <div style={styles.expertAlert}>
+                            <strong>Sugerencia Pedagógica:</strong> {SYSTEM_EXPERT_ALERTS[feedback.errorCode]}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {missionStatus[activeMission] === "completada" && (
+                      <div style={{ textAlign: "center", marginTop: "16px" }}>
                         <button onClick={handleRegenerate} style={styles.farmBtn}>
-                          🔁 Re-jugar Misión de Cierre con nuevas coordenadas
+                          🔁 Cargar nuevos números para farmear (hasta {activeMission === 'm4' ? '200' : '100'} XP)
                         </button>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-          </div>
-
-          {/* COLUMNA DERECHA: EDUBOT Y BITÁCORA */}
-          <div style={styles.bitacoraColumn}>
-            <EduBotCopilot
-              mood={copilotMood}
-              message={copilotMsg}
-              onClickHelp={handleCopilotHelpClick}
-              errorWarning={errorWarning}
-            />
-
-            <div style={styles.bitacoraCard}>
-              <div style={styles.bitacoraHeader}>
-                <h3 style={styles.bitacoraTitle}>📋 Telemetría LRS (Cockpit)</h3>
-                <span style={styles.cidiMockLabel}>Vínculo Directo</span>
-              </div>
-              <p style={styles.bitacoraMeta}>
-                Piloto: <strong>{studentProfile.nick || "Martín G."}</strong> · UUID: <strong style={{ color: "#38bdf8" }}>{studentUuid.slice(0, 10)}...</strong>
-              </p>
-              <div style={styles.bitacoraConsole}>
-                {bitacora.map((evt, idx) => (
-                  <div key={idx} style={styles.consoleRow}>
-                    <span style={styles.consoleTime}>[{evt.time}]</span>{" "}
-                    <span style={{
-                      ...styles.consoleText,
-                      color: evt.type === "success" ? "#4ade80" : evt.type === "error" ? "#fb923c" : "#38bdf8"
-                    }}>
-                      {evt.action}
-                    </span>
+                    )}
                   </div>
-                ))}
+                )
+              ) : (
+                /* MISIÓN DE CIERRE M4 */
+                m4StepsData && m4StepsData[stepIndex] && (
+                  <div style={{ ...styles.card, border: "2px solid #fb923c" }}>
+                    <div style={styles.closingHeader}>
+                      <h2 style={{ ...styles.cardTitle, color: "#fb923c" }}>🚀 Misión de Cierre: Trayectoria Final</h2>
+                      <span style={styles.badgePill}>PASO {stepIndex + 1} DE 4</span>
+                    </div>
+                    
+                    <h3 style={{ fontSize: "14px", color: suitColor, margin: "0 0 8px 0" }}>{m4StepsData[stepIndex].title}</h3>
+
+                    <div style={styles.m4PromptBox}>
+                      {m4StepsData[stepIndex].prompt}
+                    </div>
+
+                    <button
+                      onClick={handleCopilotHelpClick}
+                      style={styles.yellowNeonHelpBtn}
+                      type="button"
+                    >
+                      💡 CONSULTAR {getMissionRulesName("m4").toUpperCase()} (Apoyo N° {((helpsPerMission.m4 || 0) % 2) + 1} de 2)
+                    </button>
+
+                    <M4ToggleSwitches
+                      options={m4StepsData[stepIndex].options}
+                      onConfirm={handleOptionClick}
+                      disabled={selectedOption !== null}
+                    />
+
+                    {feedback && (
+                      <div style={{
+                        ...styles.feedbackCard,
+                        borderColor: feedback.correct ? "#10b981" : "#fb923c",
+                        backgroundColor: feedback.correct ? "rgba(16, 185, 129, 0.08)" : "rgba(251, 146, 60, 0.08)",
+                        color: feedback.correct ? "#4ade80" : "#fb923c"
+                      }}>
+                        <p style={{ margin: 0, fontWeight: "bold", fontSize: "14px" }}>
+                          {feedback.correct ? "🛰️ AJUSTE CONFIRMADO" : "⚠ ALERTA DE PRESIÓN"}
+                        </p>
+                        <p style={{ fontSize: "13px", margin: "4px 0 0 0", color: "#cbd5e1" }}>{feedback.feedback}</p>
+                        
+                        {!feedback.correct && feedback.errorCode && (
+                          <div style={styles.expertAlert}>
+                            <strong>Sugerencia Pedagógica:</strong> {SYSTEM_EXPERT_ALERTS[feedback.errorCode]}
+                          </div>
+                        )}
+
+                        {feedback.correct && (
+                          <button onClick={handleNextStepM4} style={styles.btnPrimary}>
+                            {stepIndex < 3 ? "Avanzar al Siguiente Paso ➔" : "Aterrizar Nave e Inscribir Insignia 🏆"}
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {badgeEarned && (
+                      <div style={styles.rewardCard}>
+                        <h3 style={{ color: "#fb923c", margin: "0 0 4px 0" }}>🌌 PRÓXIMA EXPEDICIÓN: El Día 1</h3>
+                        <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 12px 0" }}>
+                          Lengua + Ciencias Naturales + Matemática integradas en una expedición de supervivencia.
+                        </p>
+                        {!interestLogged ? (
+                          <button onClick={handleLogInterest} style={styles.btnInterest}>
+                            🚀 ¡Deseo continuar con esta aventura interdisciplinaria!
+                          </button>
+                        ) : (
+                          <div style={styles.interestConfirmed}>
+                            ✨ ¡Anotado, tripulante! Registramos tu interés en la base de datos oficial. Te avisaremos cuando se abra la compuerta.
+                          </div>
+                        )}
+                        <div style={{ marginTop: "14px" }}>
+                          <button onClick={handleRegenerate} style={styles.farmBtn}>
+                            🔁 Re-jugar Misión de Cierre con nuevas coordenadas
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* COLUMNA DERECHA */}
+            <div style={styles.bitacoraColumn}>
+              <EduBotCopilot
+                mood={copilotMood}
+                message={copilotMsg}
+                onClickHelp={handleCopilotHelpClick}
+                errorWarning={errorWarning}
+              />
+
+              <div style={styles.bitacoraCard}>
+                <div style={styles.bitacoraHeader}>
+                  <h3 style={styles.bitacoraTitle}>📋 Telemetría LRS (Cockpit)</h3>
+                  <span style={styles.cidiMockLabel}>Vínculo Pilotín</span>
+                </div>
+                <p style={styles.bitacoraMeta}>
+                  Piloto: <strong>{studentNickname}</strong><br />
+                  Acceso unificado: <strong>{loginTime}</strong>
+                </p>
+                <div style={styles.bitacoraConsole}>
+                  {bitacora.map((evt, idx) => (
+                    <div key={idx} style={styles.consoleRow}>
+                      <span style={styles.consoleTime}>[{evt.time}]</span>{" "}
+                      <span style={{
+                        ...styles.consoleText,
+                        color: evt.type === "success" ? "#4ade80" : evt.type === "error" ? "#fb923c" : "#38bdf8"
+                      }}>
+                        {evt.action}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* 📢 CASILLA DE CONSEJOS GRUPALES DE LA PROFE */}
+              <div style={styles.teacherAdviceStudentCard}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "18px" }}>📢</span>
+                  <span style={{ fontSize: "12px", fontWeight: "900", color: "#c084fc", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Transmisión de tu Profe en Vivo:
+                  </span>
+                </div>
+                <p style={{ fontSize: "13px", color: "#f1f5f9", margin: 0, fontStyle: "italic", fontWeight: "bold", lineHeight: "1.4" }}>
+                  "{teacherMessage}"
+                </p>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
+      
     </div>
   );
 }
 
-function getMissionBackground(activeMission) {
-  let bg = "radial-gradient(circle at 50% 10%, #0c1a3d 0%, #030818 45%, #020308 90%)";
-  if (activeMission === "m1") {
-    bg = "radial-gradient(circle at 50% 15%, #032b43 0%, #021422 45%, #01060a 100%)";
-  } else if (activeMission === "m2") {
-    bg = "radial-gradient(circle at 50% 15%, #2a0845 0%, #150526 45%, #03020a 100%)";
-  } else if (activeMission === "m3") {
-    bg = "radial-gradient(circle at 50% 15%, #052e2b 0%, #021715 45%, #010807 100%)";
-  } else if (activeMission === "m4") {
-    bg = "radial-gradient(circle at 50% 15%, #3d1c04 0%, #1a0c02 45%, #050200 100%)";
-  }
-
-  return {
-    maxWidth: "1150px",
-    margin: "0 auto",
-    padding: "0 10px 20px 0",
-    fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    backgroundColor: "#020308",
-    backgroundImage: bg,
-    color: "#cbd5e1",
-    minHeight: "100vh",
-    transition: "background-image 0.6s ease"
-  };
-}
-
-const styles = {
-  parentModalOverlay: {
-    position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(2, 3, 8, 0.95)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 9999,
-    padding: "20px"
-  },
-  parentModalCard: {
-    width: "100%",
-    maxWidth: "440px",
-    backgroundColor: "#080d24",
-    borderRadius: "16px",
-    border: "2px solid #38bdf8",
-    padding: "20px 24px",
-    boxShadow: "0 0 30px rgba(56, 189, 248, 0.35)",
-    textAlign: "center",
-    color: "#cbd5e1"
-  },
-  parentModalTitle: {
-    color: "#38bdf8",
-    fontSize: "15px",
-    fontWeight: "900",
-    marginBottom: "12px",
-    letterSpacing: "0.5px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px"
-  },
-  rulesList: { display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px", textAlign: "left" },
-  ruleItem: { display: "flex", gap: "10px", backgroundColor: "#02040e", padding: "8px 12px", borderRadius: "8px", border: "1px solid #1e293b", fontSize: "12px", alignItems: "center" },
-  ruleIcon: { fontSize: "18px" },
-  parentModalBtn: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#38bdf8",
-    color: "#020308",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "900",
-    cursor: "pointer",
-    fontSize: "13px",
-    boxShadow: "0 0 15px rgba(56, 189, 248, 0.4)"
-  },
-  profileInput: {
-    width: "100%",
-    padding: "10px",
-    backgroundColor: "#02040e",
-    border: "1px solid #334155",
-    borderRadius: "6px",
-    color: "#ffffff",
-    fontSize: "12px",
-    boxSizing: "border-box"
-  },
-  navBar: { display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#070c22", padding: "10px 20px", borderBottom: "1px solid #1e293b", marginBottom: "16px" },
-  navLogo: { fontWeight: "bold", fontSize: "14px", color: "#cbd5e1", display: "flex", alignItems: "center", gap: "8px" },
-  navLogoEll: { backgroundColor: "#38bdf8", color: "#020308", padding: "4px 8px", fontWeight: "900", borderRadius: "4px", fontSize: "12px" },
-  activePill: { backgroundColor: "rgba(16, 185, 129, 0.1)", color: "#4ade80", padding: "4px 10px", borderRadius: "12px", fontSize: "10px", fontWeight: "bold", border: "1px solid #10b981" },
-  timerPill: { backgroundColor: "rgba(148, 163, 184, 0.1)", color: "#94a3b8", padding: "4px 10px", borderRadius: "12px", fontSize: "10px", fontWeight: "bold", border: "1px solid #64748b" },
-  gameWrapper: { padding: "10px" },
-  gameHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "12px", marginBottom: "20px" },
-  gameTitle: { fontSize: "22px", margin: 0, fontWeight: "bold" },
-  gameSubtitle: { fontSize: "12px", margin: "4px 0 0 0", color: "#64748b" },
-  sessionStatus: { display: "flex", gap: "8px" },
-  progressionCard: { backgroundColor: "rgba(7, 12, 34, 0.75)", borderRadius: "10px", padding: "16px", border: "1px solid #1e293b", marginBottom: "20px" },
-  xpHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" },
-  xpBigLabel: { fontSize: "13px", color: "#cbd5e1", fontWeight: "bold" },
-  xpBigValue: { fontSize: "24px", fontWeight: "900", color: "#38bdf8" },
-  progressBarBg: { height: "26px", backgroundColor: "#02040e", borderRadius: "13px", overflow: "hidden", border: "2px solid #334155", marginBottom: "16px" },
-  progressBarFill: { height: "100%", borderRadius: "13px", transition: "width 0.5s ease-in-out", background: "linear-gradient(90deg, #10b981, #38bdf8)" },
-  glowingInsigniaCard: { display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", backgroundColor: "rgba(251, 146, 60, 0.05)", border: "2px solid #fb923c", borderRadius: "12px", padding: "16px", marginBottom: "16px" },
-  insigniaTitle: { color: "#fb923c", fontWeight: "900", fontSize: "15px", letterSpacing: "1px", textTransform: "uppercase" },
-  insigniaSubtitle: { color: "#94a3b8", fontSize: "11px", fontWeight: "bold", marginTop: "2px" },
-  tacticalMap: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" },
-  tacticalNode: (isAct, status) => ({
-    backgroundColor: isAct ? "rgba(56, 189, 248, 0.15)" : "rgba(2, 4, 14, 0.7)",
-    border: `1px solid ${isAct ? "#38bdf8" : status === "completada" ? "#10b981" : "#1e293b"}`,
-    borderRadius: "8px", padding: "12px 10px", textAlign: "left",
-    cursor: status === "bloqueada" ? "not-allowed" : "pointer",
-    opacity: status === "bloqueada" ? 0.4 : 1
-  }),
-  tacticalNodeM4: (isAct, status) => ({
-    backgroundColor: isAct ? "rgba(251, 146, 60, 0.2)" : "rgba(2, 4, 14, 0.7)",
-    border: `2px solid ${isAct ? "#fb923c" : status === "completada" ? "#10b981" : "rgba(251, 146, 60, 0.6)"}`,
-    borderRadius: "8px", padding: "12px 10px", textAlign: "left",
-    cursor: status === "bloqueada" ? "not-allowed" : "pointer",
-    opacity: status === "bloqueada" ? 0.4 : 1
-  }),
-  tacticalNodeHeader: { display: "flex", justifyContent: "space-between", alignItems: "center" },
-  statusPill: (st) => ({ fontSize: "10px", fontWeight: "900", color: st === "completada" ? "#4ade80" : st === "bloqueada" ? "#64748b" : "#38bdf8" }),
-  mainLayout: { display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "20px" },
-  gameColumn: { display: "flex", flexDirection: "column", gap: "10px" },
-  card: { backgroundColor: "rgba(7, 12, 34, 0.75)", borderRadius: "10px", padding: "20px", border: "1px solid #1e293b" },
-  cardTitle: { fontSize: "14px", margin: "0 0 8px 0", textTransform: "uppercase" },
-  instructions: { fontSize: "13px", color: "#94a3b8", lineHeight: "1.4", marginBottom: "12px" },
-  equationBox: { backgroundColor: "#02040e", padding: "16px", borderRadius: "8px", border: "1px solid #1e293b", textAlign: "center", fontSize: "24px", fontWeight: "bold", color: "#ffffff", marginBottom: "14px" },
-  feedbackCard: { padding: "12px", borderRadius: "6px", border: "1px solid", marginTop: "12px" },
-  expertAlert: { fontSize: "12px", borderTop: "1px dashed rgba(255,255,255,0.1)", paddingTop: "6px", marginTop: "6px", color: "#cbd5e1" },
-  farmBtn: { padding: "10px 18px", backgroundColor: "transparent", border: "1px solid #38bdf8", color: "#38bdf8", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", fontSize: "12px" },
-  closingHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" },
-  badgePill: { backgroundColor: "rgba(251, 146, 60, 0.1)", color: "#fb923c", border: "1px solid #fb923c", padding: "3px 8px", borderRadius: "12px", fontSize: "10px", fontWeight: "bold" },
-  m4PromptBox: { backgroundColor: "#02040e", padding: "14px", borderRadius: "8px", border: "1px solid #fb923c", fontSize: "13px", color: "#ffffff", marginBottom: "12px", lineHeight: "1.4" },
-  btnPrimary: { width: "100%", padding: "10px", backgroundColor: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", marginTop: "10px", fontSize: "12px" },
-  rewardCard: { marginTop: "16px", padding: "16px", backgroundColor: "rgba(139, 92, 246, 0.08)", border: "2px solid #8b5cf6", borderRadius: "10px", textAlign: "center" },
-  btnInterest: { width: "100%", padding: "12px", backgroundColor: "#8b5cf6", color: "#ffffff", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "13px" },
-  interestConfirmed: { padding: "10px", backgroundColor: "rgba(16, 185, 129, 0.15)", border: "1px solid #10b981", color: "#4ade80", borderRadius: "6px", fontSize: "12px", fontWeight: "bold" },
-  bitacoraColumn: { display: "flex", flexDirection: "column" },
-  bitacoraCard: { backgroundColor: "rgba(5, 9, 28, 0.75)", borderRadius: "10px", padding: "14px", border: "1px solid #1e293b", display: "flex", flexDirection: "column", maxHeight: "250px", marginBottom: "14px" },
-  bitacoraHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "6px", marginBottom: "8px" },
-  bitacoraTitle: { fontSize: "11px", margin: 0, color: "#4ade80", fontWeight: "bold" },
-  cidiMockLabel: { fontSize: "9px", color: "#38bdf8", backgroundColor: "rgba(56, 189, 248, 0.1)", padding: "2px 6px", borderRadius: "4px", border: "1px solid #38bdf8" },
-  bitacoraMeta: { fontSize: "10px", color: "#64748b", margin: "0 0 8px 0", lineHeight: "1.3" },
-  bitacoraConsole: { backgroundColor: "#02040e", borderRadius: "6px", padding: "8px", fontFamily: "monospace", fontSize: "10px", overflowY: "auto", flex: 1, border: "1px solid #111827" },
-  consoleRow: { marginBottom: "4px", lineHeight: "1.3" },
-  consoleTime: { color: "#64748b" },
-  consoleText: { fontSize: "10px" }
-};
+// ==========================================
