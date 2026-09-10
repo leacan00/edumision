@@ -1201,8 +1201,8 @@ export default function App() {
 
   // Estados de navegación y roles
   const [showStudentWelcome, setShowStudentWelcome] = useState(true);
-  
-  
+  const [showTeacherModal, setShowTeacherModal] = useState(true);
+  const [teacherInfo, setTeacherInfo] = useState({ name: "Profe Laura", curso: "1° Año B", cursoId: "curso-demo-1a" });
   const [showInstructionModal, setShowInstructionModal] = useState(null);
   const [view, setView] = useState("alumno");
   const [students, setStudents] = useState(INITIAL_STUDENTS);
@@ -1692,7 +1692,10 @@ export default function App() {
                 <span style={styles.ruleIcon}>🔒</span>
                 <div><strong>Protección de Datos:</strong> Por seguridad, no ingreses tu nombre completo.</div>
               </div>
-
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>⚡</span>
+                <div><strong>XP y Reintentos:</strong> Equivocarte te resta algo de XP de esa misión, pero al reintentarla lo podés recuperar.</div>
+              </div>
             </div>
 
             <button 
@@ -2315,8 +2318,8 @@ export default function App() {
           teacherMessage={teacherMessage}
           setTeacherMessage={setTeacherMessage}
           copyDirectLink={copyDirectLink}
-          
-          
+          teacherInfo={teacherInfo}
+          setShowTeacherModal={setShowTeacherModal}
         />
       )}
     </div>
@@ -2326,7 +2329,7 @@ export default function App() {
 // ==========================================
 // 📊 PANEL DOCENTE INTERACTIVO
 // ==========================================
-function TeacherDashboard({ students, setStudents, teacherMessage, setTeacherMessage, copyDirectLink }) {
+function TeacherDashboard({ students, setStudents, teacherMessage, setTeacherMessage, copyDirectLink, teacherInfo, setShowTeacherModal }) {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [inputMsg, setInputMsg] = useState(teacherMessage);
   const [pedagogicalPopup, setPedagogicalPopup] = useState(null);
@@ -2337,7 +2340,7 @@ function TeacherDashboard({ students, setStudents, teacherMessage, setTeacherMes
   useEffect(() => {
     const fetchLrsData = async () => {
       try {
-        const res = await fetch("/api/lrs");
+        const res = await fetch(`/api/lrs?curso_id=${encodeURIComponent(teacherInfo?.cursoId || "curso-demo-1a")}`);
         if (res.ok) {
           const data = await res.json();
           setLiveLrsConnected(true);
