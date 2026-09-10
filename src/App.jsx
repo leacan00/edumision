@@ -38,143 +38,241 @@ const MathGenerator = {
     const n1 = Math.floor(Math.random() * (D / 2 - 1)) + 1;
     const n2 = Math.floor(Math.random() * (D / 2 - 1)) + 1;
     const sumN = n1 + n2;
+
+    const narrative = `Dos sondas espaciales transmiten datos en la misma frecuencia orbital (${D}). La Sonda A envía ${n1}/${D} de la señal y la Sonda B aporta ${n2}/${D}. ¿Qué fracción total de la señal sintonizaste?`;
+
     const raw = [
-      { value: `${sumN}/${D}`, correct: true, feedback: `¡Señal sintonizada! Con igual canal orbital (${D}) sumamos numeradores: ${n1} + ${n2} = ${sumN}.` },
-      { value: `${sumN}/${D + D}`, correct: false, errorCode: "ERR_DIRECT", feedback: `Alerta: Sumaste denominadores (${D}+${D}=${D + D}). En el mismo canal orbital, el denominador no cambia.` },
-      { value: `${n1}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la primera sonda. No olvides sumar la segunda.` },
-      { value: `${n2}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la segunda sonda. Falta la inicial.` },
-      { value: `${n1 * n2}/${D}`, correct: false, errorCode: "ERR_GENERIC", feedback: `Multiplicaste los numeradores en vez de sumarlos.` }
+      { value: `${sumN}/${D}`, correct: true, feedback: `¡Señal fijada! Con igual canal orbital (${D}) sumamos numeradores: ${n1} + ${n2} = ${sumN}.` },
+      { value: `${sumN}/${D + D}`, correct: false, errorCode: "ERR_DIRECT", feedback: `Alerta: Sumaste denominadores (${D}+${D}=${D + D}). En el mismo canal, el denominador no cambia.` },
+      { value: `${n1}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la primera sonda (${n1}/${D}). Falta sumar la segunda (${n2}/${D}).` },
+      { value: `${n2}/${D}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo registraste la segunda sonda (${n2}/${D}). Falta sumar la inicial (${n1}/${D}).` }
     ];
-    return {
-      equation: `${n1}/${D} + ${n2}/${D} = ?`,
-      narrative: `Dos señales orbitales de ${n1}/${D} y ${n2}/${D} laten en la misma frecuencia. Sintonizá los mandos para combinarlas sobre la base orbital ${D}.`,
-      n1, n2, D,
-      options: prepareOptions(raw)
-    };
+
+    return { narrative, equation: `${n1}/${D} + ${n2}/${D} = ?`, n1, n2, D, options: prepareOptions(raw) };
   },
+
   generateM2() {
     const scenarios = [
-      { d1: 2, d2: 4, n1: 1, n2: 1, correct: "3/4", errDirect: "2/6", errLcd: "2/8", errPartial: "1/2", d1Val: "1/4", d2Val: "5/4", fb: "Denominador común 4: 1/2 equivale a 2/4. Sumando: 2/4 + 1/4 = 3/4." },
-      { d1: 3, d2: 6, n1: 1, n2: 1, correct: "3/6", errDirect: "2/9", errLcd: "2/18", errPartial: "1/3", d1Val: "1/6", d2Val: "4/6", fb: "Denominador común 6: 1/3 equivale a 2/6. Sumando: 2/6 + 1/6 = 3/6." },
-      { d1: 4, d2: 8, n1: 1, n2: 1, correct: "3/8", errDirect: "2/12", errLcd: "2/32", errPartial: "1/4", d1Val: "1/8", d2Val: "5/8", fb: "Denominador común 8: 1/4 equivale a 2/8. Sumando: 2/8 + 1/8 = 3/8." },
-      { d1: 5, d2: 10, n1: 1, n2: 1, correct: "3/10", errDirect: "2/15", errLcd: "2/50", errPartial: "1/5", d1Val: "1/10", d2Val: "4/10", fb: "Denominador común 10: 1/5 equivale a 2/10. Sumando: 2/10 + 1/10 = 3/10." },
-      { d1: 2, d2: 6, n1: 1, n2: 1, correct: "4/6", errDirect: "2/8", errLcd: "2/12", errPartial: "1/2", d1Val: "2/6", d2Val: "5/6", fb: "Denominador común 6: 1/2 equivale a 3/6. Sumando: 3/6 + 1/6 = 4/6." },
-      { d1: 3, d2: 9, n1: 2, n2: 1, correct: "7/9", errDirect: "3/12", errLcd: "3/27", errPartial: "2/3", d1Val: "4/9", d2Val: "5/9", fb: "Denominador común 9: 2/3 equivale a 6/9. Sumando: 6/9 + 1/9 = 7/9." }
+      { d1: 3, d2: 6, n1: 1, n2: 1, correct: "3/6", errDirect: "2/9", errLcd: "2/18", errPartial: "1/3", fb: "Denominador común 6: 1/3 equivale a 2/6. Sumando: 2/6 + 1/6 = 3/6." },
+      { d1: 2, d2: 4, n1: 1, n2: 1, correct: "3/4", errDirect: "2/6", errLcd: "2/8", errPartial: "1/2", fb: "Denominador común 4: 1/2 equivale a 2/4. Sumando: 2/4 + 1/4 = 3/4." },
+      { d1: 4, d2: 8, n1: 1, n2: 1, correct: "3/8", errDirect: "2/12", errLcd: "2/32", errPartial: "1/4", fb: "Denominador común 8: 1/4 equivale a 2/8. Sumando: 2/8 + 1/8 = 3/8." },
+      { d1: 5, d2: 10, n1: 1, n2: 1, correct: "3/10", errDirect: "2/15", errLcd: "2/50", errPartial: "1/5", fb: "Denominador común 10: 1/5 equivale a 2/10. Sumando: 2/10 + 1/10 = 3/10." },
+      { d1: 3, d2: 9, n1: 2, n2: 1, correct: "7/9", errDirect: "3/12", errLcd: "3/27", errPartial: "2/3", fb: "Denominador común 9: 2/3 equivale a 6/9. Sumando: 6/9 + 1/9 = 7/9." }
     ];
     const choice = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const narrative = `El tanque principal del propulsor contiene ${choice.n1}/${choice.d1} de combustible y el tanque auxiliar aporta ${choice.n2}/${choice.d2} más. ¿Qué fracción total de combustible lograste cargar?`;
+
     const raw = [
       { value: choice.correct, correct: true, feedback: `¡Válvula calibrada! ${choice.fb}` },
-      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `No sumes directamente denominadores (${choice.d1}+${choice.d2}). Buscá la base común.` },
-      { value: choice.errPartial, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el primer depósito. Te falta el auxiliar.` },
-      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Multiplicaste denominadores sin amplificar numeradores.` },
-      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el depósito auxiliar sin el principal.` },
-      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Flujo sobrecargado. Revisá la proporción con lápiz y papel.` }
+      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `No sumes directamente denominadores (${choice.d1}+${choice.d2}=${choice.d1+choice.d2}). Buscá la base común.` },
+      { value: choice.errPartial, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo cargaste el primer tanque (${choice.n1}/${choice.d1}). Falta sumar el auxiliar.` },
+      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Multiplicaste denominadores sin amplificar adecuadamente los numeradores.` }
     ];
-    return {
-      equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`,
-      narrative: `El tanque principal tiene ${choice.n1}/${choice.d1} de combustible y el auxiliar aporta ${choice.n2}/${choice.d2}. Calibrá las válvulas inyectoras para calcular la suma.`,
-      d1: choice.d1, d2: choice.d2,
-      options: prepareOptions(raw)
-    };
+
+    return { narrative, equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, d1: choice.d1, d2: choice.d2, options: prepareOptions(raw) };
   },
+
   generateM3() {
     const scenarios = [
-      { d1: 3, d2: 6, n1: 1, n2: 1, displayCorrect: "1/2", errDirect: "2/9", errLcd: "2/18", d1Val: "1/3", d2Val: "4/6", d3Val: "2/3", fb: "1/3 + 1/6 = 3/6. Simplificado por 3 da la frecuencia pura de 1/2." },
-      { d1: 4, d2: 12, n1: 1, n2: 1, displayCorrect: "1/3", errDirect: "2/16", errLcd: "2/48", d1Val: "1/4", d2Val: "3/12", d3Val: "5/12", fb: "1/4 + 1/12 = 4/12. Simplificado por 4 da la frecuencia pura de 1/3." },
-      { d1: 6, d2: 10, n1: 1, n2: 1, displayCorrect: "4/15", errDirect: "2/16", errLcd: "2/60", d1Val: "1/6", d2Val: "1/10", d3Val: "7/30", fb: "MCM 30: 5/30 + 3/30 = 8/30, que simplificado es 4/15." },
-      { d1: 2, d2: 10, n1: 1, n2: 1, displayCorrect: "3/5", errDirect: "2/12", errLcd: "2/20", d1Val: "1/2", d2Val: "4/10", d3Val: "7/10", fb: "1/2 + 1/10 = 5/10 + 1/10 = 6/10, que simplificado por 2 da 3/5." },
-      { d1: 5, d2: 15, n1: 2, n2: 1, displayCorrect: "7/15", errDirect: "3/20", errLcd: "3/75", d1Val: "2/5", d2Val: "4/15", d3Val: "8/15", fb: "2/5 + 1/15 = 6/15 + 1/15 = 7/15 (fracción irreducible)." }
+      { d1: 3, d2: 4, n1: 1, n2: 1, displayCorrect: "7/12", errDirect: "2/7", errLcd: "1/12", fb: "MCM entre 3 y 4 es 12: 1/3 = 4/12 y 1/4 = 3/12. Sumados: 7/12." },
+      { d1: 2, d2: 5, n1: 1, n2: 2, displayCorrect: "9/10", errDirect: "3/7", errLcd: "2/10", fb: "MCM entre 2 y 5 es 10: 1/2 = 5/10 y 2/5 = 4/10. Sumados: 9/10." },
+      { d1: 3, d2: 5, n1: 1, n2: 1, displayCorrect: "8/15", errDirect: "2/8", errLcd: "1/15", fb: "MCM entre 3 y 5 es 15: 1/3 = 5/15 y 1/5 = 3/15. Sumados: 8/15." },
+      { d1: 4, d2: 5, n1: 1, n2: 1, displayCorrect: "9/20", errDirect: "2/9", errLcd: "1/20", fb: "MCM entre 4 y 5 es 20: 1/4 = 5/20 y 1/5 = 4/20. Sumados: 9/20." }
     ];
     const choice = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const narrative = `Dos módulos espaciales deben empalmar sus órbitas. El Módulo Alfa recorrió ${choice.n1}/${choice.d1} de la trayectoria y el Módulo Beta recorrió ${choice.n2}/${choice.d2}. ¿Qué fracción total cubrieron entre ambos?`;
+
     const raw = [
       { value: choice.displayCorrect, correct: true, feedback: `¡Órbitas enlazadas! ${choice.fb}` },
-      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `Sumar directo no sirve cuando las frecuencias orbitales difieren.` },
-      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Buscaste base común pero olvidaste amplificar numeradores.` },
-      { value: choice.d1Val, correct: false, errorCode: "ERR_PARTIAL", feedback: `Falta enlazar la trayectoria del segundo módulo.` },
-      { value: choice.d2Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Frecuencia distorsionada. Revisá la simplificación con lápiz y papel.` },
-      { value: choice.d3Val, correct: false, errorCode: "ERR_GENERIC", feedback: `Desvío en el cálculo del mínimo común múltiplo.` }
+      { value: choice.errDirect, correct: false, errorCode: "ERR_DIRECT", feedback: `Sumar numeradores y denominadores directo (${choice.d1}+${choice.d2}) no funciona cuando las bases difieren.` },
+      { value: choice.errLcd, correct: false, errorCode: "ERR_LCD", feedback: `Buscaste la base común pero cometiste un desvío al amplificar los numeradores.` },
+      { value: `${choice.n1}/${choice.d1}`, correct: false, errorCode: "ERR_PARTIAL", feedback: `Solo contabilizaste el Módulo Alfa (${choice.n1}/${choice.d1}).` }
     ];
-    return {
-      equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`,
-      narrative: `Dos módulos deben empalmar sus órbitas. Uno avanzó ${choice.n1}/${choice.d1} del recorrido, el otro ${choice.n2}/${choice.d2}. Enlazá las órbitas simplificando al valor más puro.`,
-      d1: choice.d1, d2: choice.d2,
-      options: prepareOptions(raw)
-    };
+
+    return { narrative, equation: `${choice.n1}/${choice.d1} + ${choice.n2}/${choice.d2} = ?`, d1: choice.d1, d2: choice.d2, options: prepareOptions(raw) };
   },
+
   generateM4() {
-    const m4Variants = [
+    const variants = [
+      // Variación 1: Depósitos Octales (MCM = 8)
       {
-        prompt1: "Tanque A aporta 1/4, Tanque B aporta 1/6 y Tanque C aporta 1/3. ¿Cuál es el mínimo común denominador entre 4, 6 y 3?",
-        prompt2: "Convertí los tres tanques a doceavos y sumalos: 1/4 + 1/6 + 1/3 = ?",
-        prompt3: "El propulsor necesita al menos 2/3 (8/12) de carga para despegar. Tenés 9/12 (3/4). ¿Alcanza?",
-        mcm: "12", sumResult: "9/12",
-        fb1: "12 es el menor número que es múltiplo de 4, 6 y 3 a la vez.",
-        fb2: "1/4=3/12, 1/6=2/12, 1/3=4/12. Sumados: 9/12, es decir 3/4.",
-        fb3: "3/4 = 9/12 y 2/3 = 8/12: hay más combustible del mínimo necesario."
+        title: "Soporte Vital: Depósitos Octales de Agua",
+        intro: "Tres tanques de reciclaje alimentan el sistema de agua potable de la cabina principal antes del despegue orbital.",
+        steps: [
+          {
+            prompt: "El Tanque A aporta 1/2, el Tanque B aporta 1/4 y el Tanque C aporta 1/8. ¿Cuál es el mínimo común denominador entre 2, 4 y 8?",
+            rawOptions: [
+              { value: "8", correct: true, feedback: "¡Correcto! 8 es el menor múltiplo común de 2, 4 y 8." },
+              { value: "16", correct: false, errorCode: "ERR_LCD", feedback: "16 es múltiplo común, pero no es el mínimo." },
+              { value: "4", correct: false, errorCode: "ERR_LCD", feedback: "4 es múltiplo de 2 y 4, pero no de 8." },
+              { value: "6", correct: false, errorCode: "ERR_LCD", feedback: "6 no es múltiplo de 4 ni de 8." }
+            ]
+          },
+          {
+            prompt: "Convertí los tres tanques a octavos y sumalos: 1/2 + 1/4 + 1/8 = ?",
+            rawOptions: [
+              { value: "7/8", correct: true, feedback: "1/2 = 4/8, 1/4 = 2/8, 1/8 = 1/8. Sumados: 4/8 + 2/8 + 1/8 = 7/8." },
+              { value: "3/14", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores linealmente (1+1+1 sobre 2+4+8)." },
+              { value: "6/8", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar el aporte del Tanque C (1/8)." },
+              { value: "5/8", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/2 a octavos (es 4/8, no 2/8)." }
+            ]
+          },
+          {
+            prompt: "El protocolo de despegue exige contar con al menos 3/4 (6/8) de agua en la reserva. Tenés 7/8. ¿Alcanza la reserva?",
+            rawOptions: [
+              { value: "Sí, alcanza y sobra 1/8 de reserva", correct: true, feedback: "7/8 es mayor que 3/4 (6/8). La reserva está asegurada con un margen de 1/8." },
+              { value: "No alcanza, falta 1/8 de agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 3/4 a octavos (6/8) y compará con 7/8." },
+              { value: "Es exactamente igual", correct: false, errorCode: "ERR_COMPARE", feedback: "No son iguales: 3/4 equivale a 6/8 y tenés 7/8." },
+              { value: "No se puede saber", correct: false, errorCode: "ERR_COMPARE", feedback: "Al convertir a un denominador común (octavos), la comparación es directa." }
+            ]
+          }
+        ]
       },
+      // Variación 2: Reciclado de Hidroponia (MCM = 12)
       {
-        prompt1: "Tanque A aporta 1/2, Tanque B aporta 1/4 y Tanque C aporta 1/8. ¿Cuál es el mínimo común denominador entre 2, 4 y 8?",
-        prompt2: "Convertí los tres tanques a octavos y sumalos: 1/2 + 1/4 + 1/8 = ?",
-        prompt3: "El propulsor necesita al menos 3/4 (6/8) de carga para despegar. Tenés 7/8. ¿Alcanza?",
-        mcm: "8", sumResult: "7/8",
-        fb1: "8 es el menor múltiplo común de 2, 4 y 8.",
-        fb2: "1/2=4/8, 1/4=2/8, 1/8=1/8. Sumados: 7/8.",
-        fb3: "7/8 es mayor que 6/8 (3/4): la potencia es suficiente para la maniobra."
+        title: "Soporte Vital: Reciclado de Hidroponia",
+        intro: "El purificador recupera agua de tres sectores del invernadero espacial antes del ciclo de riego.",
+        steps: [
+          {
+            prompt: "El Sector 1 aporta 1/3, el Sector 2 aporta 1/6 y el Sector 3 aporta 5/12. ¿Cuál es el mínimo común denominador entre 3, 6 y 12?",
+            rawOptions: [
+              { value: "12", correct: true, feedback: "¡Correcto! 12 es el mínimo común múltiplo entre 3, 6 y 12." },
+              { value: "24", correct: false, errorCode: "ERR_LCD", feedback: "24 funciona pero no es el mínimo común denominador." },
+              { value: "18", correct: false, errorCode: "ERR_LCD", feedback: "18 no es múltiplo de 4 ni divisible por 12." },
+              { value: "6", correct: false, errorCode: "ERR_LCD", feedback: "6 no puede contener al denominador 12." }
+            ]
+          },
+          {
+            prompt: "Convertí los tres sectores a doceavos y sumalos: 1/3 + 1/6 + 5/12 = ?",
+            rawOptions: [
+              { value: "11/12", correct: true, feedback: "1/3 = 4/12, 1/6 = 2/12, 5/12 = 5/12. Sumados: 4/12 + 2/12 + 5/12 = 11/12." },
+              { value: "7/21", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores de forma directa (1+1+5 sobre 3+6+12)." },
+              { value: "9/12", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/3 a doceavos (es 4/12, no 2/12)." },
+              { value: "6/12", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar la contribución del Sector 3 (5/12)." }
+            ]
+          },
+          {
+            prompt: "El sistema requiere un piso de 5/6 (10/12) de capacidad para habilitar el circuito general. Tenés 11/12. ¿Se autoriza el riego?",
+            rawOptions: [
+              { value: "Sí, se autoriza (supera el mínimo por 1/12)", correct: true, feedback: "11/12 es mayor que 5/6 (10/12). El circuito tiene agua suficiente." },
+              { value: "No se autoriza, falta 1/12", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 5/6 a doceavos (10/12) y compará con 11/12." },
+              { value: "Es igual al mínimo requerido", correct: false, errorCode: "ERR_COMPARE", feedback: "5/6 es 10/12 y tenés 11/12, tenés 1/12 más." },
+              { value: "Falta la mitad del agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Compará los numeradores con el mismo denominador 12." }
+            ]
+          }
+        ]
       },
+      // Variación 3: Condensadores de Emergencia (MCM = 10)
       {
-        prompt1: "Sonda A aporta 1/3, Sonda B aporta 1/5 y Sonda C aporta 1/15. ¿Cuál es la frecuencia común (MCM) entre 3, 5 y 15?",
-        prompt2: "Convertí las tres sondas a quinceavos y sumalas: 1/3 + 1/5 + 1/15 = ?",
-        prompt3: "La antena necesita al menos 2/5 (6/15) de potencia para fijar curso. Tenés 9/15. ¿Alcanza?",
-        mcm: "15", sumResult: "9/15",
-        fb1: "15 es el mínimo común múltiplo entre 3, 5 y 15.",
-        fb2: "1/3=5/15, 1/5=3/15, 1/15=1/15. Sumados: 9/15.",
-        fb3: "9/15 es mayor que 6/15: señal suficiente fijada."
+        title: "Soporte Vital: Condensadores de Emergencia",
+        intro: "Tres filtros de condensación recogen la humedad ambiental para llenar el tanque de agua purificada.",
+        steps: [
+          {
+            prompt: "El Filtro A aporta 2/5, el Filtro B aporta 1/2 y el Filtro C aporta 1/10. ¿Cuál es el mínimo común denominador entre 5, 2 y 10?",
+            rawOptions: [
+              { value: "10", correct: true, feedback: "¡Exacto! 10 es el menor múltiplo de 5, 2 y 10." },
+              { value: "20", correct: false, errorCode: "ERR_LCD", feedback: "20 es múltiplo común, pero no el menor." },
+              { value: "15", correct: false, errorCode: "ERR_LCD", feedback: "15 es múltiplo de 5, pero no de 2 ni de 10." },
+              { value: "5", correct: false, errorCode: "ERR_LCD", feedback: "5 no puede contener al 10." }
+            ]
+          },
+          {
+            prompt: "Convertí las tres fracciones a décimos y sumalas: 2/5 + 1/2 + 1/10 = ?",
+            rawOptions: [
+              { value: "10/10 (1 entero)", correct: true, feedback: "2/5 = 4/10, 1/2 = 5/10, 1/10 = 1/10. Sumados: 4/10 + 5/10 + 1/10 = 10/10 (tanque lleno)." },
+              { value: "4/17", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores directo (2+1+1 sobre 5+2+10)." },
+              { value: "8/10", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/2 a décimos (es 5/10, no 3/10)." },
+              { value: "9/10", correct: false, errorCode: "ERR_PARTIAL", feedback: "Omitiste sumar el aporte del Filtro C (1/10)." }
+            ]
+          },
+          {
+            prompt: "Se necesita contar con al menos 4/5 (8/10) de reserva para la caminata espacial. Tenés 10/10. ¿Hay suficiente agua?",
+            rawOptions: [
+              { value: "Sí, la capacidad está al 100% y supera el 4/5 requerido", correct: true, feedback: "10/10 (1 entero) es mayor que 4/5 (8/10). Hay margen de sobra." },
+              { value: "No alcanza, falta 2/10", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 4/5 a décimos (8/10) y compará con 10/10." },
+              { value: "Es exactamente igual al mínimo", correct: false, errorCode: "ERR_COMPARE", feedback: "4/5 es 8/10, mientras que tenés 10/10." },
+              { value: "No se puede comparar", correct: false, errorCode: "ERR_COMPARE", feedback: "Con denominador común 10 se compara directamente." }
+            ]
+          }
+        ]
+      },
+      // Variación 4: Refrigeración del Reactor (Caso Deficitario, MCM = 12)
+      {
+        title: "Soporte Vital: Refrigeración del Reactor",
+        intro: "Tres depósitos inyectan refrigerante líquido al circuito de soporte vital del reactor.",
+        steps: [
+          {
+            prompt: "El Depósito 1 aporta 1/3, el Depósito 2 aporta 1/4 y el Depósito 3 aporta 1/6. ¿Cuál es el mínimo común denominador entre 3, 4 y 6?",
+            rawOptions: [
+              { value: "12", correct: true, feedback: "¡Correcto! 12 es el menor múltiplo de 3, 4 y 6." },
+              { value: "24", correct: false, errorCode: "ERR_LCD", feedback: "24 es múltiplo pero no es el mínimo." },
+              { value: "18", correct: false, errorCode: "ERR_LCD", feedback: "18 no es divisible por 4." },
+              { value: "36", correct: false, errorCode: "ERR_LCD", feedback: "36 es múltiplo pero muy alto." }
+            ]
+          },
+          {
+            prompt: "Convertí los tres depósitos a doceavos y sumalos: 1/3 + 1/4 + 1/6 = ?",
+            rawOptions: [
+              { value: "9/12 (o 3/4)", correct: true, feedback: "1/3 = 4/12, 1/4 = 3/12, 1/6 = 2/12. Sumados: 4/12 + 3/12 + 2/12 = 9/12." },
+              { value: "3/13", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores en línea recta (1+1+1 sobre 3+4+6)." },
+              { value: "7/12", correct: false, errorCode: "ERR_PARTIAL", feedback: "Te faltó sumar el Depósito 3 (1/6 = 2/12)." },
+              { value: "8/12", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 1/3 a doceavos (es 4/12, no 3/12)." }
+            ]
+          },
+          {
+            prompt: "La computadora exige un nivel mínimo de 5/6 (10/12) para evitar el sobrecalentamiento. Tenés 9/12. ¿Alcanza la carga?",
+            rawOptions: [
+              { value: "No alcanza, falta 1/12 para llegar al nivel de seguridad", correct: true, feedback: "5/6 equivale a 10/12. Al tener 9/12, falta exactamente 1/12 para el mínimo de seguridad." },
+              { value: "Sí alcanza y sobra refrigerante", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 5/6 a doceavos (10/12) y compará con 9/12." },
+              { value: "Es exactamente igual al requerimiento", correct: false, errorCode: "ERR_COMPARE", feedback: "9/12 es menor que 10/12 (5/6)." },
+              { value: "Sobra la mitad del refrigerante", correct: false, errorCode: "ERR_COMPARE", feedback: "Analizá las fracciones en doceavos: 9/12 vs 10/12." }
+            ]
+          }
+        ]
+      },
+      // Variación 5: Módulo de Ensayos Biológicos (MCM = 20)
+      {
+        title: "Soporte Vital: Módulo de Ensayos Biológicos",
+        intro: "Se consolidan tres reservas de agua destilada para los laboratorios de cultivo de la base.",
+        steps: [
+          {
+            prompt: "La Reserva Alfa aporta 2/5, la Beta aporta 1/4 y la Gamma aporta 3/20. ¿Cuál es el mínimo común denominador entre 5, 4 y 20?",
+            rawOptions: [
+              { value: "20", correct: true, feedback: "¡Excelente! 20 es el MCM entre 5, 4 y 20." },
+              { value: "40", correct: false, errorCode: "ERR_LCD", feedback: "40 es múltiplo común, pero no el mínimo." },
+              { value: "10", correct: false, errorCode: "ERR_LCD", feedback: "10 no es múltiplo de 4." },
+              { value: "15", correct: false, errorCode: "ERR_LCD", feedback: "15 no es múltiplo de 4 ni de 20." }
+            ]
+          },
+          {
+            prompt: "Convertí las tres reservas a veintiavos y sumalas: 2/5 + 1/4 + 3/20 = ?",
+            rawOptions: [
+              { value: "16/20 (o 4/5)", correct: true, feedback: "2/5 = 8/20, 1/4 = 5/20, 3/20 = 3/20. Sumados: 8/20 + 5/20 + 3/20 = 16/20." },
+              { value: "6/29", correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste directamente numeradores y denominadores (2+1+3 sobre 5+4+20)." },
+              { value: "13/20", correct: false, errorCode: "ERR_PARTIAL", feedback: "Omitiste sumar el aporte de la Reserva Gamma (3/20)." },
+              { value: "14/20", correct: false, errorCode: "ERR_LCD", feedback: "Revisá la conversión de 2/5 a veintiavos (es 8/20, no 6/20)." }
+            ]
+          },
+          {
+            prompt: "El laboratorio exige un piso de 7/10 (14/20) para habilitar los cultivos. Tenés 16/20. ¿Se pueden iniciar las pruebas?",
+            rawOptions: [
+              { value: "Sí, alcanza y queda una reserva de 2/20 (1/10)", correct: true, feedback: "16/20 es mayor que 7/10 (14/20). Hay suficiente agua destilada." },
+              { value: "No se puede, falta agua", correct: false, errorCode: "ERR_COMPARE", feedback: "Convertí 7/10 a veintiavos (14/20) y compará con 16/20." },
+              { value: "Es exactamente igual al mínimo", correct: false, errorCode: "ERR_COMPARE", feedback: "16/20 supera a 14/20 por 2/20." },
+              { value: "No hay suficiente información", correct: false, errorCode: "ERR_COMPARE", feedback: "Comparando en veintiavos la solución es directa." }
+            ]
+          }
+        ]
       }
     ];
 
-    const v = m4Variants[Math.floor(Math.random() * m4Variants.length)];
-
-    return [
-      {
-        title: "Paso 1: Mínimo Común Denominador",
-        prompt: v.prompt1,
-        options: prepareOptions([
-          { value: v.mcm, correct: true, feedback: v.fb1 },
-          { value: String(parseInt(v.mcm) * 2), correct: false, errorCode: "ERR_LCD", feedback: "Es múltiplo común pero no el mínimo." },
-          { value: String(parseInt(v.mcm) + 6), correct: false, errorCode: "ERR_LCD", feedback: "No es múltiplo de todos los denominadores." },
-          { value: String(parseInt(v.mcm) * 3), correct: false, errorCode: "ERR_LCD", feedback: "Buscá el menor múltiplo común." }
-        ])
-      },
-      {
-        title: "Paso 2: Suma de Tres Fracciones",
-        prompt: v.prompt2,
-        options: prepareOptions([
-          { value: v.sumResult, correct: true, feedback: v.fb2 },
-          { value: "3/" + (parseInt(v.mcm) * 3), correct: false, errorCode: "ERR_DIRECT", feedback: "Sumaste numeradores y denominadores linealmente." },
-          { value: "5/" + v.mcm, correct: false, errorCode: "ERR_PARTIAL", feedback: "Faltó incorporar uno de los tres depósitos." },
-          { value: "2/" + v.mcm, correct: false, errorCode: "ERR_PARTIAL", feedback: "Solo convertiste dos tanques." }
-        ])
-      },
-      {
-        title: "Paso 3: Comparación con Requisito Crítico",
-        prompt: v.prompt3,
-        options: prepareOptions([
-          { value: "Sí, alcanza y supera el mínimo requerido", correct: true, feedback: v.fb3 },
-          { value: "No, falta potencia", correct: false, errorCode: "ERR_COMPARE", feedback: "Compará los numeradores sobre la misma base." },
-          { value: "Es exactamente igual al mínimo", correct: false, errorCode: "ERR_COMPARE", feedback: "Revisá los valores numeradores." },
-          { value: "Indeterminado", correct: false, errorCode: "ERR_COMPARE", feedback: "Llevando a la misma base se compara directamente." }
-        ])
-      },
-      {
-        title: "Paso 4: Justificación Científica",
-        prompt: "¿Cuál fue tu razonamiento formal para confirmar el despegue?",
-        options: prepareOptions([
-          { value: "Convertí las 3 fracciones al mínimo común denominador, las sumé y comparé el total contra el requisito sobre la misma base.", correct: true, justificationType: "Master", feedback: "¡Explicación científica impecable!" },
-          { value: "Hice una estimación aproximada calculando las porciones visualmente.", correct: true, justificationType: "Intuitive", feedback: "¡Buen cálculo intuitivo!" },
-          { value: "Sumé numeradores y denominadores por separado.", correct: false, justificationType: "Failed", errorCode: "ERR_DIRECT", feedback: "Suma directa de partes no es válida." }
-        ])
-      }
-    ];
+    const chosenVariant = variants[Math.floor(Math.random() * variants.length)];
+    return chosenVariant.steps.map((st) => ({
+      ...st,
+      title: chosenVariant.title,
+      intro: chosenVariant.intro,
+      options: prepareOptions(st.rawOptions)
+    }));
   }
 };
 
@@ -538,21 +636,7 @@ const astroStyles = {
   titleBlock: { flex: 1 },
   copilotName: { fontSize: "14px", fontWeight: "900", color: "#c084fc", letterSpacing: "1px" },
   copilotSub: { fontSize: "11px", color: "#94a3b8", marginBottom: "6px" },
-  hintBtn: {
-    padding: "8px 14px",
-    backgroundColor: "#f59e0b",
-    border: "none",
-    color: "#020308",
-    borderRadius: "8px",
-    fontSize: "12px",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "0 2px 10px rgba(245, 158, 11, 0.4)",
-    marginTop: "6px",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px"
-  },
+  hintBtn: { padding: "6px 12px", backgroundColor: "rgba(139, 92, 246, 0.15)", border: "1px solid #8b5cf6", color: "#c084fc", borderRadius: "6px", fontSize: "11px", fontWeight: "bold", cursor: "pointer" },
   speechBubble: { backgroundColor: "#03040b", border: "1px solid #1e293b", borderRadius: "8px", padding: "12px 14px" },
   copilotText: { 
     fontSize: "15px", 
@@ -1080,34 +1164,32 @@ const m4ToggleStyles = {
 export default function App() {
   const { playCorrect, playError, playRobotChat, playMissionDone, playBadge } = useGameFeedback();
 
-  // Helper para leer/guardar estado persistente del alumno en LocalStorage
-  const loadStudentSavedState = () => {
+  // Onboarding en 3 Carteles para el Alumno
+  const [studentOnboarded, setStudentOnboarded] = useState(() => {
     if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("edumision_student_progress_v3");
-        if (saved) return JSON.parse(saved);
-      } catch (e) {}
+      return localStorage.getItem("edumision_student_onboarded") === "true";
     }
-    return null;
-  };
-  const savedProg = loadStudentSavedState();
-
-  // UUID único persistente del alumno
-  const [studentUuid] = useState(() => {
-    if (typeof window !== "undefined") {
-      let u = localStorage.getItem("edumision_student_uuid");
-      if (!u) {
-        u = "std-" + Math.random().toString(36).substring(2, 9) + "-" + Date.now().toString(36);
-        localStorage.setItem("edumision_student_uuid", u);
-      }
-      return u;
-    }
-    return "std-demo-123456";
+    return false;
   });
-
-  // Gestión de Nickname persistente en LocalStorage
+  const [onboardingStep, setOnboardingStep] = useState(1);
+  const [studentProfile, setStudentProfile] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("edumision_student_profile");
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return { nick: "", edad: "", curso: "", escuela: "" };
+  });
   const [studentNickname, setStudentNickname] = useState(() => {
     if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("edumision_student_profile");
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          if (p.nick) return p.nick;
+        } catch (e) {}
+      }
       return localStorage.getItem("edumision_nickname") || "Martín G.";
     }
     return "Martín G.";
@@ -1146,19 +1228,24 @@ export default function App() {
   }, []);
 
   // 🎯 SISTEMA DE XP Y ERRORES EXACTOS POR MISIÓN
-  const [missionXp, setMissionXp] = useState(() => savedProg?.missionXp || { m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [missionXp, setMissionXp] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
   const [currentMissionErrors, setCurrentMissionErrors] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
 
   const [floatingXp, setFloatingXp] = useState(null);
-  const [activeMission, setActiveMission] = useState(() => savedProg?.activeMission || "m1");
-  const [missionStatus, setMissionStatus] = useState(() => savedProg?.missionStatus || { m1: "activa", m2: "bloqueada", m3: "bloqueada", m4: "bloqueada" });
+  const [activeMission, setActiveMission] = useState("m1");
+  const [missionStatus, setMissionStatus] = useState({
+    m1: "activa",
+    m2: "bloqueada",
+    m3: "bloqueada",
+    m4: "bloqueada"
+  });
 
   const [currentLevelData, setCurrentLevelData] = useState(() => MathGenerator.generateM1());
   const [selectedOption, setSelectedOption] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [attempts, setAttempts] = useState(0);
-  const [badgeEarned, setBadgeEarned] = useState(() => savedProg?.badgeEarned || false);
-  const [interestLogged, setInterestLogged] = useState(() => savedProg?.interestLogged || false);
+  const [badgeEarned, setBadgeEarned] = useState(false);
+  const [interestLogged, setInterestLogged] = useState(false);
 
   // MEDICIÓN DE TIEMPO DE RESPUESTA EN M4 PARA DETECTAR FRAUDE (Soporte Padres / Calculadora)
   const m4StartTimeRef = useRef(null);
@@ -1182,31 +1269,11 @@ export default function App() {
   const timerRef = useRef(null);
   const [loginTime] = useState(new Date().toLocaleTimeString("es-AR"));
 
-  const [helpsRequested, setHelpsRequested] = useState(() => savedProg?.helpsRequested || 0);
-  const [totalErrors, setTotalErrors] = useState(() => savedProg?.totalErrors || 0);
-  const [helpsPerMission, setHelpsPerMission] = useState(() => savedProg?.helpsPerMission || { m1: 0, m2: 0, m3: 0, m4: 0 });
-  const [errorsPerMission, setErrorsPerMission] = useState(() => savedProg?.errorsPerMission || { m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [helpsRequested, setHelpsRequested] = useState(0);
+  const [totalErrors, setTotalErrors] = useState(0);
+  const [helpsPerMission, setHelpsPerMission] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
+  const [errorsPerMission, setErrorsPerMission] = useState({ m1: 0, m2: 0, m3: 0, m4: 0 });
   const [teacherMessage, setTeacherMessage] = useState("¡Buen viaje espacial, tripulante! Lee con atención cada señal.");
-
-    // Guardado automático del progreso del alumno en LocalStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("edumision_student_progress_v3", JSON.stringify({
-          studentNickname,
-          missionXp,
-          missionStatus,
-          activeMission,
-          badgeEarned,
-          helpsRequested,
-          totalErrors,
-          helpsPerMission,
-          errorsPerMission,
-          interestLogged
-        }));
-      } catch (e) {}
-    }
-  }, [studentNickname, missionXp, missionStatus, activeMission, badgeEarned, helpsRequested, totalErrors, helpsPerMission, errorsPerMission, interestLogged]);
 
   const totalXp = missionXp.m1 + missionXp.m2 + missionXp.m3 + missionXp.m4;
 
@@ -1599,137 +1666,178 @@ export default function App() {
       )}
 
       {/* 🚀 MODAL DE INICIO DE NICKNAME Y REGLAS (REFUGIO DE MONTAÑA) */}
-      {showStudentWelcome && view === "alumno" && !lobbyBlocked && (
-        <div style={styles.parentModalOverlay}>
-          <div style={{ ...styles.parentModalCard, maxWidth: "460px" }}>
-            <div style={{ ...styles.parentModalTitle, fontSize: "18px" }}>
-              <span>🏕️</span> PROYECTO ÉXODO: ENTRENAMIENTO DE SUPERVIVENCIA
+      {/* 🪐 ONBOARDING EN 3 CARTELES PARA EL ALUMNO */}
+  {!studentOnboarded && view === "alumno" && (
+    <div style={styles.parentModalOverlay}>
+      <div style={{ ...styles.parentModalCard, maxWidth: "460px" }}>
+        {onboardingStep === 1 && (
+          <div>
+            <div style={{ ...styles.parentModalTitle, color: "#38bdf8" }}>
+              <span>🪐</span> PRUEBA DE EXPLORACIÓN EDUCATIVA — EDUMISIÓN
             </div>
-
-            <div style={{ marginBottom: "16px", textAlign: "left" }}>
-              <label style={{ fontSize: "13px", fontWeight: "bold", color: "#38bdf8", display: "block", marginBottom: "8px" }}>
-                📝 TU APODO O NICKNAME DE PILOTO:
-              </label>
-              <input
-                type="text"
-                placeholder="Escribí tu apodo de entrenamiento (ej: Lauti)"
-                value={studentNickname === "Martín G. (Tú)" ? "" : studentNickname}
-                onChange={(e) => {
-                  const val = e.target.value.trim() || "Martín G. (Tú)";
-                  setStudentNickname(val);
-                  localStorage.setItem("edumision_nickname", val);
-                }}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  backgroundColor: "#02040e",
-                  border: "1px solid #38bdf8",
-                  color: "#ffffff",
-                  fontSize: "15px"
-                }}
-              />
-            </div>
-            
             <div style={styles.rulesList}>
               <div style={styles.ruleItem}>
-                <span style={styles.ruleIcon}>📝</span>
-                <div style={{ fontSize: "14px" }}><strong>Lápiz y Papel:</strong> Hacé las cuentas a mano antes de usar los mandos.</div>
+                <span style={styles.ruleIcon}>🔬</span>
+                <div><strong>Prueba de Experiencia:</strong> Vas a participar de una prueba para evaluar el funcionamiento de un juego educativo.</div>
               </div>
               <div style={styles.ruleItem}>
-                <span style={styles.ruleIcon}>🚫</span>
-                <div style={{ fontSize: "14px" }}><strong>Sin Calculadora:</strong> Entrená tu mente para estar listo en el refugio.</div>
+                <span style={styles.ruleIcon}>📋</span>
+                <div><strong>Sin Nota Escolar:</strong> Tu actividad no va a generar ninguna nota y no se envía nada a tus profes ni a la escuela (solo a tus padres si lo solicitan).</div>
+              </div>
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>📝</span>
+                <div><strong>Sin Calculadora:</strong> Te pedimos que hagas las cuentas a mano en papel para ejercitar tu propio razonamiento.</div>
+              </div>
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>🔒</span>
+                <div><strong>Protección de Datos:</strong> Por seguridad, no ingreses tu nombre completo.</div>
               </div>
               <div style={styles.ruleItem}>
                 <span style={styles.ruleIcon}>⚡</span>
-                <div style={{ fontSize: "14px" }}><strong>Puntos Resilientes:</strong> Los errores no te bloquean. Sumás XP que siempre van hacia arriba al practicar y corregir.</div>
+                <div><strong>XP y Reintentos:</strong> Equivocarte te resta algo de XP de esa misión, pero al reintentarla lo podés recuperar.</div>
               </div>
             </div>
 
             <button 
               onClick={() => {
-                if (!studentNickname || studentNickname === "Martín G. (Tú)") {
-                  setStudentNickname("Martín G. (Tú)");
-                }
-                setShowStudentWelcome(false);
                 playRobotChat();
+                setOnboardingStep(2);
               }}
-              style={{ ...styles.parentModalBtn, padding: "14px", fontSize: "15px" }}
+              style={styles.parentModalBtn}
               type="button"
             >
-              🚀 ¡INICIAR ENTRENAMIENTO EN VIVO!
+              Siguiente ➔
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      
-  {/* 👩‍🏫 MODAL DE ACCESO DOCENTE */}
-  {showTeacherModal && view === "docente" && (
-    <div style={styles.parentModalOverlay}>
-      <div style={{ ...styles.parentModalCard, borderColor: "#8b5cf6", boxShadow: "0 0 30px rgba(139, 92, 246, 0.4)" }}>
-        <div style={{ ...styles.parentModalTitle, color: "#c084fc" }}>
-          <span>👩‍🏫</span> ACCESO A CONSOLA DOCENTE
-        </div>
-        <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "16px", lineHeight: "1.4" }}>
-          Ingresá tu nombre y curso para activar el seguimiento de trayectorias e integrar tu lista de alumnos en vivo.
-        </p>
+        {onboardingStep === 2 && (
+          <div>
+            <div style={{ ...styles.parentModalTitle, color: "#38bdf8" }}>
+              <span>🚀</span> FICHA DE LA TRIPULACIÓN
+            </div>
+            <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "16px", lineHeight: "1.4" }}>
+              Completá tus datos de piloto para registrar tus avances en la base de datos oficial:
+            </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
-          <div style={{ textAlign: "left" }}>
-            <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-              Nombre del Docente:
-            </label>
-            <input
-              type="text"
-              value={teacherInfo.name}
-              onChange={(e) => setTeacherInfo({ ...teacherInfo, name: e.target.value })}
-              placeholder="Ej: Profe Laura"
-              style={styles.teacherDashboardInput}
-            />
-          </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "18px", textAlign: "left" }}>
+              <div>
+                <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
+                  Nick / Apodo (no ingreses tu nombre completo):
+                </label>
+                <input 
+                  type="text" 
+                  value={studentProfile.nick}
+                  onChange={(e) => setStudentProfile({ ...studentProfile, nick: e.target.value })}
+                  placeholder="Ej: Marto_05"
+                  style={styles.teacherDashboardInput}
+                />
+              </div>
 
-          <div style={{ textAlign: "left" }}>
-            <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-              Curso / División:
-            </label>
-            <input
-              type="text"
-              value={teacherInfo.curso}
-              onChange={(e) => {
-                const cursoVal = e.target.value;
-                const slug = "curso-" + cursoVal.toLowerCase().replace(/[^a-z0-9]/g, "");
-                setTeacherInfo({ ...teacherInfo, curso: cursoVal, cursoId: slug || "curso-demo-1a" });
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
+                    Edad:
+                  </label>
+                  <input 
+                    type="text" 
+                    value={studentProfile.edad}
+                    onChange={(e) => setStudentProfile({ ...studentProfile, edad: e.target.value })}
+                    placeholder="Ej: 12 años"
+                    style={styles.teacherDashboardInput}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
+                    Año / Curso:
+                  </label>
+                  <input 
+                    type="text" 
+                    value={studentProfile.curso}
+                    onChange={(e) => setStudentProfile({ ...studentProfile, curso: e.target.value })}
+                    placeholder="Ej: 1° Año B"
+                    style={styles.teacherDashboardInput}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "11px", color: "#cbd5e1", fontWeight: "bold", display: "block", marginBottom: "3px" }}>
+                  Escuela:
+                </label>
+                <input 
+                  type="text" 
+                  value={studentProfile.escuela}
+                  onChange={(e) => setStudentProfile({ ...studentProfile, escuela: e.target.value })}
+                  placeholder="Ej: IPEM 128"
+                  style={styles.teacherDashboardInput}
+                />
+              </div>
+            </div>
+
+            <p style={{ fontSize: "11px", color: "#38bdf8", marginBottom: "14px", fontStyle: "italic", textAlign: "center" }}>
+              ¡Gracias por sumarte a estas misiones que van a ser parte de una gran aventura! 🚀
+            </p>
+
+            <button 
+              onClick={() => {
+                playRobotChat();
+                const finalNick = studentProfile.nick || "Martín G.";
+                setStudentNickname(finalNick);
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("edumision_student_profile", JSON.stringify({ ...studentProfile, nick: finalNick }));
+                  localStorage.setItem("edumision_nickname", finalNick);
+                }
+                setOnboardingStep(3);
               }}
-              placeholder="Ej: 1° Año B"
-              style={styles.teacherDashboardInput}
-            />
+              style={styles.parentModalBtn}
+              type="button"
+            >
+              🚀 CONTINUAR A LA CABINA
+            </button>
           </div>
-        </div>
+        )}
 
-        <button
-          onClick={() => {
-            setShowTeacherModal(false);
-            playRobotChat();
-            // Registrar docente en servidor LRS para balanceo de carga
-            try {
-              const tid = (teacherInfo.name + "-" + teacherInfo.curso).toLowerCase().trim().replace(/\s+/g, '-');
-              fetch("/api/lrs?action=register_teacher", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  teacher_id: tid,
-                  teacher_name: teacherInfo.name,
-                  curso_id: teacherInfo.curso
-                })
-              }).catch((e) => console.log("LRS Teacher Reg Error:", e));
-            } catch (e) {}
-          }}
-          style={{ ...styles.parentModalBtn, backgroundColor: "#8b5cf6", color: "#ffffff", boxShadow: "0 0 15px rgba(139, 92, 246, 0.5)" }}
-          type="button"
-        >
-          🚀 INGRESAR A LA CONSOLA
-        </button>
+        {onboardingStep === 3 && (
+          <div>
+            <div style={{ ...styles.parentModalTitle, color: "#38bdf8" }}>
+              <span>🗺️</span> TU MAPA DE NAVEGACIÓN ESPACIAL
+            </div>
+            
+            <div style={styles.rulesList}>
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>🌲</span>
+                <div><strong>Árbol de Misiones:</strong> Vas a avanzar paso a paso desde la Misión 1 hasta la Misión 4 de Cierre para obtener la Insignia de Maestría.</div>
+              </div>
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>🔄</span>
+                <div><strong>Reintento Libre:</strong> Si cometés un desvío, no perdés tu avance. Podés volver a realizar las misiones cuando quieras para recuperar el XP.</div>
+              </div>
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>💡</span>
+                <div><strong>Pistas Sin Penalización:</strong> Pedir pistas a EduBot no te resta experiencia; solo queda registrado en la bitácora para tu docente.</div>
+              </div>
+              <div style={styles.ruleItem}>
+                <span style={styles.ruleIcon}>📝</span>
+                <div><strong>Lápiz y Papel:</strong> Tené siempre a mano hoja y lápiz para resolver las cuentas antes de presionar los botones.</div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => {
+                playRobotChat();
+                setStudentOnboarded(true);
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("edumision_student_onboarded", "true");
+                }
+              }}
+              style={{ ...styles.parentModalBtn, backgroundColor: "#10b981" }}
+              type="button"
+            >
+              🛰️ ENTENDIDO, ¡A LAS MISIONES!
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )}
